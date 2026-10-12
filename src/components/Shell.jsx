@@ -26,6 +26,35 @@ const LINKS = [
   { href: '#/ai-writer', label: 'AI Writer', match: '/ai-writer', soon: true },
 ];
 
+const THEME_KEY = 'resumeforge-theme';
+
+function systemTheme() {
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function currentTheme() {
+  return document.documentElement.getAttribute('data-theme') || systemTheme();
+}
+
+export function ThemeToggle() {
+  const [theme, setTheme] = useState(currentTheme);
+  const next = theme === 'dark' ? 'light' : 'dark';
+  const toggle = () => {
+    document.documentElement.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch (e) {
+      /* storage unavailable (private mode) – theme still applies for this visit */
+    }
+    setTheme(next);
+  };
+  return (
+    <button className="icon-btn theme-toggle" onClick={toggle} aria-label={`Switch to ${next} theme`} title={`Switch to ${next} theme`}>
+      <Ico n={theme === 'dark' ? 'sun' : 'moon'} size={18} />
+    </button>
+  );
+}
+
 export function Navbar({ path }) {
   const { user, openLogin, signOut } = useAuth();
   const toast = useToast();
@@ -44,6 +73,7 @@ export function Navbar({ path }) {
           ))}
         </nav>
         <div className="nav-right">
+          <ThemeToggle />
           {user ? (
             <div className="user-menu">
               <button className="avatar-btn" onClick={() => setMenu((m) => !m)} aria-expanded={menu} aria-label="Account menu">

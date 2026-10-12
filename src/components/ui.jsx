@@ -29,6 +29,8 @@ const PATHS = {
   bolt: 'M13 2L4 14h7l-1 8 9-12h-7z',
   grid: 'M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z',
   logout: 'M15 4h4v16h-4 M10 8l-4 4 4 4 M6 12h10',
+  sun: 'M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M12 2v2 M12 20v2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M2 12h2 M20 12h2 M4.9 19.1l1.4-1.4 M17.7 6.3l1.4-1.4',
+  moon: 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z',
 };
 export function Ico({ n, size = 18, className = '' }) {
   return (
