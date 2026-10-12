@@ -76,6 +76,49 @@ function Preview({ resume }) {
   );
 }
 
+function StartOver({ onPick }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const away = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+    const esc = (e) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('mousedown', away);
+    document.addEventListener('keydown', esc);
+    return () => {
+      document.removeEventListener('mousedown', away);
+      document.removeEventListener('keydown', esc);
+    };
+  }, [open]);
+  const pick = (v) => {
+    setOpen(false);
+    onPick(v);
+  };
+  return (
+    <div className="startover" ref={ref}>
+      <button className="btn ghost sm" onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open}>
+        <Ico n="reset" size={15} /> <span>Start over</span> <Ico n="down" size={13} className="so-caret" />
+      </button>
+      {open && (
+        <div className="dropdown right so-menu" role="menu">
+          <button role="menuitem" onClick={() => pick('blank')}>
+            <span className="so-ico"><Ico n="file" size={16} /></span>
+            <span className="so-txt"><strong>Blank resume</strong><small>Clear everything and begin fresh</small></span>
+          </button>
+          <hr />
+          <div className="so-label">Load an example</div>
+          {Object.entries(SAMPLES).map(([k, s]) => (
+            <button role="menuitem" key={k} onClick={() => pick(k)}>
+              <span className="so-ico"><Ico n="user" size={16} /></span>
+              <span className="so-txt"><strong>{s.label}</strong><small>Example content you can edit</small></span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Builder({ params }) {
   const { resume, update, replace, startBlank, loadSample, savedAt, setTemplate } = useResume();
   const toast = useToast();
@@ -139,15 +182,14 @@ export default function Builder({ params }) {
         </div>
         <div className="tb-right">
           <ThemeToggle />
-          <select id="load-sample" className="input sm" value="" onChange={(e) => {
-            const v = e.target.value;
-            if (!v) return;
-            setConfirm({ text: v === 'blank' ? 'Clear everything and start with a blank resume?' : `Replace your current content with the “${SAMPLES[v].label}” example?`, act: () => (v === 'blank' ? startBlank() : loadSample(v)) });
-          }} aria-label="Start over or load example">
-            <option value="">Start over…</option>
-            <option value="blank">Blank resume</option>
-            {Object.entries(SAMPLES).map(([k, s]) => <option key={k} value={k}>Example: {s.label}</option>)}
-          </select>
+          <StartOver
+            onPick={(v) =>
+              setConfirm({
+                text: v === 'blank' ? 'Clear everything and start with a blank resume?' : `Replace your current content with the “${SAMPLES[v].label}” example?`,
+                act: () => (v === 'blank' ? startBlank() : loadSample(v)),
+              })
+            }
+          />
           <div className="dl">
             <button className="btn primary sm" onClick={printPdf}><Ico n="download" size={16} /> Download PDF</button>
             <button className="btn primary sm dl-more" onClick={() => setMenu((m) => !m)} aria-label="More download options" aria-expanded={menu}><Ico n="down" size={15} /></button>

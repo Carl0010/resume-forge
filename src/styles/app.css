@@ -286,6 +286,17 @@ select.input { cursor: pointer; }
 .dl > .btn:first-child { border-radius: 8px 0 0 8px; }
 .dl-more { border-radius: 0 8px 8px 0 !important; border-left: 1px solid color-mix(in srgb, var(--primary-ink) 30%, transparent) !important; padding-inline: 9px !important; }
 .dropdown.right { right: 0; min-width: 270px; }
+.startover { position: relative; }
+.startover .btn { gap: 7px; }
+.so-caret { opacity: 0.6; transition: transform 0.15s; }
+.startover [aria-expanded='true'] .so-caret { transform: rotate(180deg); }
+.so-menu { min-width: 290px; padding: 8px; box-shadow: 0 12px 36px rgba(20, 26, 41, 0.18); animation: so-in 0.12s ease-out; }
+@keyframes so-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.so-menu button { padding: 9px 10px; gap: 12px; }
+.so-ico { flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; background: var(--primary-soft); color: var(--primary); }
+.so-txt { display: flex; flex-direction: column; line-height: 1.25; }
+.so-txt small { color: var(--muted); font-size: 0.78rem; }
+.so-label { padding: 6px 10px 4px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .example-note { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: center; font-size: 0.86rem; padding: 6px 16px; background: color-mix(in srgb, var(--marker) 28%, var(--surface)); border-bottom: 1px solid var(--line); }
 
 .split { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(380px, 480px) 1fr; }
@@ -374,7 +385,8 @@ input[type='range'] { width: 100%; accent-color: var(--primary); }
   .split { grid-template-columns: minmax(0, 1fr); }
   .toolbar { flex-wrap: nowrap; }
   .tb-right { flex-wrap: nowrap; gap: 8px; }
-  #load-sample { max-width: 112px; }
+  .startover .btn span { display: none; }
+  .startover .so-caret { display: none; }
   .dl > .btn:first-child { padding-inline: 10px; }
   .builder[data-view='edit'] .preview { display: none; }
   .builder[data-view='preview'] .panel { display: none; }
