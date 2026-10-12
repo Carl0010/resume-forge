@@ -76,6 +76,92 @@ function Preview({ resume }) {
   );
 }
 
+const PANEL = { min: 340, max: 760, def: 440, key: 'resumeforge-panel-w', previewMin: 420 };
+
+function clampPanel(w) {
+  const room = typeof window === 'undefined' ? PANEL.max : window.innerWidth - PANEL.previewMin;
+  return Math.round(Math.max(PANEL.min, Math.min(w, PANEL.max, Math.max(PANEL.min, room))));
+}
+
+function usePanelWidth() {
+  const [w, setW] = useState(() => {
+    try {
+      const v = parseInt(localStorage.getItem(PANEL.key), 10);
+      return clampPanel(Number.isFinite(v) ? v : PANEL.def);
+    } catch {
+      return PANEL.def;
+    }
+  });
+  const save = (v) => {
+    try {
+      localStorage.setItem(PANEL.key, String(v));
+    } catch {
+      /* storage unavailable – width still applies for this visit */
+    }
+  };
+  // Keep the panel inside its limits when the window is resized.
+  useEffect(() => {
+    const onResize = () => setW((cur) => clampPanel(cur));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return [w, setW, save];
+}
+
+function PanelResizer({ width, setWidth, save, panelRef }) {
+  const [drag, setDrag] = useState(false);
+  const onDown = (e) => {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setDrag(true);
+  };
+  const onMove = (e) => {
+    if (!drag || !panelRef.current) return;
+    setWidth(clampPanel(e.clientX - panelRef.current.getBoundingClientRect().left));
+  };
+  const onUp = (e) => {
+    if (!drag) return;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    setDrag(false);
+    save(width);
+  };
+  const onKey = (e) => {
+    const step = e.shiftKey ? 60 : 20;
+    let next = null;
+    if (e.key === 'ArrowLeft') next = width - step;
+    else if (e.key === 'ArrowRight') next = width + step;
+    else if (e.key === 'Home') next = PANEL.min;
+    else if (e.key === 'End') next = PANEL.max;
+    if (next === null) return;
+    e.preventDefault();
+    const v = clampPanel(next);
+    setWidth(v);
+    save(v);
+  };
+  return (
+    <div
+      className={'resizer' + (drag ? ' on' : '')}
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize editor panel"
+      aria-valuemin={PANEL.min}
+      aria-valuemax={PANEL.max}
+      aria-valuenow={width}
+      tabIndex={0}
+      title="Drag to resize · double-click to reset"
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+      onKeyDown={onKey}
+      onDoubleClick={() => {
+        setWidth(PANEL.def);
+        save(PANEL.def);
+      }}
+    />
+  );
+}
+
 function StartOver({ onPick }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -128,6 +214,8 @@ export default function Builder({ params }) {
   const [ai, setAi] = useState(false);
   const [confirm, setConfirm] = useState(null);
   const fileRef = useRef(null);
+  const panelRef = useRef(null);
+  const [panelW, setPanelW, savePanelW] = usePanelWidth();
   const tpl = getTemplate(resume.settings.templateId);
 
   useEffect(() => {
@@ -217,14 +305,15 @@ export default function Builder({ params }) {
         </div>
       )}
 
-      <div className="split">
-        <div className="panel">
+      <div className="split" style={{ '--panel-w': panelW + 'px' }}>
+        <div className="panel" ref={panelRef}>
           <div className="tabs" role="tablist">
             <button role="tab" aria-selected={tab === 'content'} className={tab === 'content' ? 'on' : ''} onClick={() => setTab('content')}><Ico n="file" size={16} /> Content</button>
             <button role="tab" aria-selected={tab === 'design'} className={tab === 'design' ? 'on' : ''} onClick={() => setTab('design')}><Ico n="sliders" size={16} /> Design</button>
             <button className="ai-tab" onClick={() => setAi(true)}><Ico n="sparkle" size={16} /> AI assist <span className="pill soon">Soon</span></button>
           </div>
           <div className="panel-scroll">{tab === 'content' ? <Editor onAI={() => setAi(true)} /> : <DesignPanel />}</div>
+          <PanelResizer width={panelW} setWidth={setPanelW} save={savePanelW} panelRef={panelRef} />
         </div>
         <Preview resume={resume} />
       </div>
