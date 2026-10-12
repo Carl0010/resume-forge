@@ -7,6 +7,7 @@ import { normalizeResume } from '../data/schema.js';
 import Editor from '../builder/Editor.jsx';
 import DesignPanel from '../builder/DesignPanel.jsx';
 import { Ico, Modal } from '../components/ui.jsx';
+import { ThemeToggle } from '../components/Shell.jsx';
 import { navigate, useResume, useToast } from '../store.jsx';
 
 const PAGE = { A4: { w: 794, h: 1123 }, Letter: { w: 816, h: 1056 } };
@@ -128,6 +129,7 @@ export default function Builder({ params }) {
     <div className="builder" data-view={mobileView}>
       <div className="toolbar">
         <div className="tb-left">
+          <a href="#/" className="tb-home" title="ResumeForge home" aria-label="ResumeForge home"><Ico n="home" size={17} /></a>
           <button className="tb-tpl" onClick={() => { setTab('design'); setMobileView('edit'); }} title="Change template">
             <Ico n="layout" size={16} /> <span>{tpl.name}</span>
           </button>
@@ -136,6 +138,7 @@ export default function Builder({ params }) {
           </span>
         </div>
         <div className="tb-right">
+          <ThemeToggle />
           <select id="load-sample" className="input sm" value="" onChange={(e) => {
             const v = e.target.value;
             if (!v) return;

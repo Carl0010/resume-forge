@@ -29,7 +29,7 @@ function Routes() {
   const isBuilder = path.startsWith('/builder');
   return (
     <div className={'app' + (isBuilder ? ' app-builder' : '')}>
-      <Navbar path={path} />
+      {!isBuilder && <Navbar path={path} />}
       <main className="app-main">{page}</main>
       {!isBuilder && <Footer />}
       <LoginModal />
