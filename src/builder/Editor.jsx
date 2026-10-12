@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SECTION_DEFS, sectionTitle, uid } from '../data/schema.js';
 import { Ico } from '../components/ui.jsx';
 import { useResume, useToast } from '../store.jsx';
+import { resolveStyle } from '../templates/registry.js';
 
 function Field({ f, value, onChange, idp }) {
   const id = `${idp}-${f.name}`;
@@ -170,6 +171,9 @@ function Personal() {
   const { resume, update } = useResume();
   const toast = useToast();
   const p = resume.personal;
+  // The photo slot is only usable when the chosen template will actually show a photo.
+  const st = resolveStyle(resume.settings.templateId, resume.settings.overrides);
+  const hasSlot = st.showPhoto != null ? !!st.showPhoto : !!st.photo;
   const set = (k) => (e) => update((r) => ((r.personal[k] = e.target.value), r));
   const onPhoto = (e) => {
     const f = e.target.files && e.target.files[0];
@@ -200,15 +204,19 @@ function Personal() {
     <section className="card">
       <div className="card-head static"><span className="card-title">Personal details</span></div>
       <div className="card-body">
-        <div className="photo-row">
+        <div className={'photo-row' + (hasSlot ? '' : ' off')}>
           <div className="photo-prev">{p.photo ? <img src={p.photo} alt="Your photo" /> : <Ico n="user" size={26} />}</div>
           <div>
-            <label className="btn ghost sm file-btn">
+            <label className={'btn ghost sm file-btn' + (hasSlot ? '' : ' is-disabled')} aria-disabled={!hasSlot}>
               <Ico n="image" size={16} /> {p.photo ? 'Change photo' : 'Add photo'}
-              <input id="p-photo" type="file" accept="image/*" onChange={onPhoto} />
+              <input id="p-photo" type="file" accept="image/*" onChange={onPhoto} disabled={!hasSlot} />
             </label>
             {p.photo && <button className="btn text sm" onClick={() => update((r) => ((r.personal.photo = ''), r))}>Remove</button>}
-            <small className="muted block">Shown only on templates with a photo slot. Many Indian, US and UK employers prefer no photo.</small>
+            <small className="muted block">
+              {hasSlot
+                ? 'Many Indian, US and UK employers prefer no photo.'
+                : 'This template has no photo slot. Choose a template with a photo, or set Photo to “Show photo” in the Design tab.'}
+            </small>
           </div>
         </div>
         <div className="fields">
