@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SECTION_DEFS, sectionTitle, uid } from '../data/schema.js';
 import { Ico } from '../components/ui.jsx';
 import { useResume, useToast } from '../store.jsx';
@@ -102,20 +102,58 @@ function ListSection({ k }) {
   );
 }
 
-function SectionCard({ k, index, total, onAI }) {
+function isFilled(resume, k) {
+  if (k === 'personal') return !!(resume.personal.fullName.trim() && (resume.personal.email.trim() || resume.personal.phone.trim()));
+  const def = SECTION_DEFS[k];
+  return def.kind === 'list' ? resume[k].length > 0 : !!String(resume[k] || '').trim();
+}
+
+function KebabMenu({ items }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const away = (e) => ref.current && !ref.current.contains(e.target) && setOpen(false);
+    const esc = (e) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('mousedown', away);
+    document.addEventListener('keydown', esc);
+    return () => {
+      document.removeEventListener('mousedown', away);
+      document.removeEventListener('keydown', esc);
+    };
+  }, [open]);
+  return (
+    <div className="kebab" ref={ref}>
+      <button className="icon-btn" onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open} aria-label="Section options" title="Section options">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" /></svg>
+      </button>
+      {open && (
+        <div className="dropdown right kebab-menu" role="menu">
+          {items.map((it) => (
+            <button key={it.label} role="menuitem" disabled={it.disabled} onClick={() => { setOpen(false); it.run(); }}>
+              {it.icon ? <Ico n={it.icon} size={16} /> : <span className="kebab-aa">Aa</span>} {it.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SectionCard({ k, index, total, onAI, open, onToggle }) {
   const { resume, update } = useResume();
-  const [open, setOpen] = useState(k === 'summary' || k === 'experience');
   const [renaming, setRenaming] = useState(false);
   const hidden = !!resume.hidden[k];
   const def = SECTION_DEFS[k];
   const count = def.kind === 'list' ? resume[k].length : null;
+  const filled = isFilled(resume, k);
   const move = (d) => update((r) => {
     const j = index + d;
     [r.order[index], r.order[j]] = [r.order[j], r.order[index]];
     return r;
   });
   return (
-    <section className={'card sec-card' + (hidden ? ' is-hidden' : '')}>
+    <section id={`sec-${k}`} className={'card sec-card' + (hidden ? ' is-hidden' : '')}>
       <div className="card-head">
         {renaming ? (
           <input
@@ -131,20 +169,26 @@ function SectionCard({ k, index, total, onAI }) {
             onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
           />
         ) : (
-          <button className="card-toggle" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+          <button className="card-toggle" onClick={onToggle} aria-expanded={open}>
             <Ico n="chevron" size={16} className="chev" />
+            <span className={'dot' + (filled ? ' on' : '')} title={filled ? 'Filled in' : 'Empty'} aria-hidden="true" />
             <span className="card-title">{sectionTitle(resume, k)}</span>
             {count != null && <span className="count">{count}</span>}
             {hidden && <span className="pill">Hidden</span>}
+            <span className="sr-only">{filled ? 'Filled in' : 'Empty'}</span>
           </button>
         )}
         <div className="item-tools">
-          <button className="icon-btn" onClick={() => setRenaming(true)} aria-label="Rename section" title="Rename section">Aa</button>
           <button className="icon-btn" onClick={() => update((r) => ((r.hidden[k] = !hidden), r))} aria-label={hidden ? 'Show section' : 'Hide section'} title={hidden ? 'Show on resume' : 'Hide from resume'}>
             <Ico n={hidden ? 'eyeOff' : 'eye'} size={16} />
           </button>
-          <button className="icon-btn" onClick={() => move(-1)} disabled={index === 0} aria-label="Move section up"><Ico n="up" size={15} /></button>
-          <button className="icon-btn" onClick={() => move(1)} disabled={index === total - 1} aria-label="Move section down"><Ico n="down" size={15} /></button>
+          <KebabMenu
+            items={[
+              { label: 'Rename section', run: () => setRenaming(true) },
+              { label: 'Move up', icon: 'up', disabled: index === 0, run: () => move(-1) },
+              { label: 'Move down', icon: 'down', disabled: index === total - 1, run: () => move(1) },
+            ]}
+          />
         </div>
       </div>
       {open && (
@@ -167,7 +211,7 @@ function SectionCard({ k, index, total, onAI }) {
   );
 }
 
-function Personal() {
+function Personal({ open, onToggle }) {
   const { resume, update } = useResume();
   const toast = useToast();
   const p = resume.personal;
@@ -201,8 +245,16 @@ function Personal() {
     </div>
   );
   return (
-    <section className="card">
-      <div className="card-head static"><span className="card-title">Personal details</span></div>
+    <section id="sec-personal" className="card">
+      <div className="card-head">
+        <button className="card-toggle" onClick={onToggle} aria-expanded={open}>
+          <Ico n="chevron" size={16} className="chev" />
+          <span className={'dot' + (isFilled(resume, 'personal') ? ' on' : '')} aria-hidden="true" />
+          <span className="card-title">Personal details</span>
+          <span className="sr-only">{isFilled(resume, 'personal') ? 'Filled in' : 'Empty'}</span>
+        </button>
+      </div>
+      {open && (
       <div className="card-body">
         <div className={'photo-row' + (hasSlot ? '' : ' off')}>
           <div className="photo-prev">{p.photo ? <img src={p.photo} alt="Your photo" /> : <Ico n="user" size={26} />}</div>
@@ -230,17 +282,58 @@ function Personal() {
           {F('github', 'GitHub', 'github.com/you')}
         </div>
       </div>
+      )}
     </section>
   );
 }
 
 export default function Editor({ onAI }) {
   const { resume } = useResume();
+  const [openKeys, setOpenKeys] = useState(() => new Set(['personal', 'summary', 'experience']));
+  const keys = ['personal', ...resume.order];
+  const visible = keys.filter((k) => k === 'personal' || !resume.hidden[k]);
+  const filledCount = visible.filter((k) => isFilled(resume, k)).length;
+  const pct = Math.round((filledCount / Math.max(1, visible.length)) * 100);
+  const allOpen = keys.every((k) => openKeys.has(k));
+
+  const toggle = (k) => setOpenKeys((cur) => {
+    const n = new Set(cur);
+    if (n.has(k)) n.delete(k); else n.add(k);
+    return n;
+  });
+  const jump = (k) => {
+    setOpenKeys((cur) => new Set(cur).add(k));
+    requestAnimationFrame(() => {
+      // Scroll only the panel (scrollIntoView would also scroll the clipped page behind it).
+      const el = document.getElementById(`sec-${k}`);
+      const box = el && el.closest('.panel-scroll');
+      if (!box) return;
+      const nav = box.querySelector('.sec-nav');
+      const y = el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop - (nav ? nav.offsetHeight - 16 : 0) - 8;
+      box.scrollTo({ top: Math.max(0, y), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+  };
+  const label = (k) => (k === 'personal' ? 'Personal' : sectionTitle(resume, k));
+
   return (
     <div className="editor">
-      <Personal />
+      <div className="sec-nav" role="navigation" aria-label="Jump to section">
+        <div className="sec-progress">
+          <div className="sec-progress-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-label="Resume completion"><span style={{ width: pct + '%' }} /></div>
+          <span className="tiny muted">{filledCount} of {visible.length} sections filled</span>
+          <button className="btn text sm" onClick={() => setOpenKeys(allOpen ? new Set() : new Set(keys))}>{allOpen ? 'Collapse all' : 'Expand all'}</button>
+        </div>
+        <div className="sec-chips">
+          {keys.map((k) => (
+            <button key={k} className={'sec-chip' + (isFilled(resume, k) ? ' filled' : '') + (resume.hidden[k] ? ' off' : '')} onClick={() => jump(k)}>
+              <span className="dot" aria-hidden="true" />{label(k)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <Personal open={openKeys.has('personal')} onToggle={() => toggle('personal')} />
       {resume.order.map((k, i) => (
-        <SectionCard key={k} k={k} index={i} total={resume.order.length} onAI={onAI} />
+        <SectionCard key={k} k={k} index={i} total={resume.order.length} onAI={onAI} open={openKeys.has(k)} onToggle={() => toggle(k)} />
       ))}
     </div>
   );

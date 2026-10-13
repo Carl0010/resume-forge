@@ -46,27 +46,43 @@ export default function Home() {
     <div className="home">
       <section className="hero wrap">
         <div className="hero-copy">
-          <span className="eyebrow">Free resume &amp; CV builder</span>
+          <span className="hero-kicker"><span className="live-dot" aria-hidden="true" /> Free resume &amp; CV builder · no login</span>
           <h1>
             A resume you’re proud of, <mark>before the deadline.</mark>
           </h1>
           <p className="lead">
             Pick from {TEMPLATES.length} recruiter-tested templates, type on the left, watch it update on the right, and download a clean PDF.
-            No login. No hidden charges.
+            No watermark, no hidden charges.
           </p>
           <div className="hero-cta">
-            <a className="btn primary lg" href="#/builder">Start building, free</a>
-            <a className="btn ghost lg" href="#/import"><Ico n="upload" /> Import old resume</a>
+            <a className="btn primary lg" href="#/builder">Start building <Ico n="chevron" size={16} /></a>
+            <a className="btn text lg" href="#/import"><Ico n="upload" /> or import an old resume</a>
           </div>
-          <ul className="ticks">
-            <li><Ico n="check" size={16} /> Live preview as you type</li>
-            <li><Ico n="check" size={16} /> ATS-friendly options</li>
-            <li><Ico n="check" size={16} /> Autosaves in your browser</li>
-          </ul>
+          <dl className="hero-facts">
+            <div><dt>{TEMPLATES.length}</dt><dd>templates</dd></div>
+            <div><dt>₹0</dt><dd>to download</dd></div>
+            <div><dt>2 min</dt><dd>to a first draft</dd></div>
+          </dl>
+          <p className="hero-ats tiny muted">Layouts built to parse cleanly in Workday, Greenhouse, Lever and Taleo.</p>
         </div>
+
         <div className="hero-art" aria-hidden="true">
-          <div className="paper p2"><ScaledResume resume={samples.student} templateId="campus" /></div>
-          <div className="paper p1"><ScaledResume resume={samples.professional} templateId="stanford" /></div>
+          <div className="demo">
+            <div className="demo-bar"><i /><i /><i /><span>resumeforge / builder</span></div>
+            <div className="demo-body">
+              <div className="demo-panel">
+                <div className="demo-tabs"><b>Content</b><span>Design</span></div>
+                <div className="demo-field"><small>Full name</small><div>Aarav Mehta<u className="caret" /></div></div>
+                <div className="demo-field"><small>Job title</small><div>Senior Product Manager</div></div>
+                <div className="demo-chips"><span className="on">Summary</span><span>Experience</span><span>Skills</span></div>
+                <div className="demo-lines"><i /><i /><i /></div>
+              </div>
+              <div className="demo-paper"><ScaledResume resume={samples.professional} templateId="stanford" /></div>
+            </div>
+          </div>
+          <div className="float f-pdf"><Ico n="download" size={15} /> PDF ready</div>
+          <div className="float f-ats"><Ico n="check" size={15} /> ATS-friendly</div>
+          <div className="hero-side"><ScaledResume resume={samples.student} templateId="campus" /></div>
         </div>
       </section>
 
