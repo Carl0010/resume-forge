@@ -2,6 +2,8 @@
 // Imported by the app (client-side head updates) AND by scripts/prerender.mjs (build-time static HTML),
 // so keep this file free of JSX / browser APIs.
 
+import { GUIDES, INFO_PAGES } from './content/pages.js';
+
 export const SITE_URL = 'https://resume-forge-two-weld.vercel.app';
 export const SITE_NAME = 'ResumeForge';
 
@@ -90,6 +92,33 @@ export const ROUTES = {
   },
 };
 
+// Guides index + each guide + info pages
+ROUTES['/guides'] = {
+  title: 'Resume & CV Guides – Tips, Examples and Formats | ResumeForge',
+  description: 'Practical, plain-language resume and CV guides: fresher resumes, ATS tips, summary examples, formats, length and resume vs CV.',
+  h1: 'Resume and CV guides',
+  intro: 'Practical, plain-language advice for writing a resume or CV that gets read. Each guide links to free templates you can use right away.',
+  kind: 'guides-index',
+};
+for (const g of GUIDES) {
+  ROUTES['/guides/' + g.slug] = {
+    title: g.title + ' | ResumeForge',
+    description: g.description,
+    h1: g.h1,
+    intro: g.intro,
+    sections: g.sections,
+    cta: g.cta,
+    related: g.related,
+    date: g.date,
+    kind: 'guide',
+  };
+}
+for (const [path, p] of Object.entries(INFO_PAGES)) {
+  ROUTES[path] = { ...p, kind: 'info' };
+}
+
+export { GUIDES };
+
 export const NOT_FOUND = {
   title: 'Page not found | ResumeForge',
   description: 'That page does not exist.',
@@ -98,6 +127,8 @@ export const NOT_FOUND = {
 
 // Pages included in sitemap.xml
 export const SITEMAP_PATHS = Object.keys(ROUTES).filter((p) => !ROUTES[p].noindex);
+
+export const isKnownPath = (path) => Object.prototype.hasOwnProperty.call(ROUTES, path);
 
 // Resolve a router location ({ path, params }) to the key used in ROUTES.
 export function routeKey(path, params = {}) {

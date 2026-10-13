@@ -6,7 +6,8 @@ import Templates from './pages/Templates.jsx';
 import Builder from './pages/Builder.jsx';
 import ImportPage from './pages/Import.jsx';
 import AIWriter from './pages/AIWriter.jsx';
-import { metaFor, canonicalFor } from './seo-data.js';
+import Doc, { GuidesIndex } from './pages/Doc.jsx';
+import { metaFor, canonicalFor, isKnownPath } from './seo-data.js';
 
 function setMeta(sel, attr, key, value) {
   let el = document.head.querySelector(sel);
@@ -57,8 +58,10 @@ function Routes() {
   else if (path.startsWith('/builder')) page = <Builder params={params} />;
   else if (path.startsWith('/import')) page = <ImportPage params={params} />;
   else if (path.startsWith('/ai-writer')) page = <AIWriter />;
+  else if (path === '/guides') page = <GuidesIndex />;
+  else if (isKnownPath(path) && ['guide', 'info'].includes(metaFor(path).kind)) page = <Doc path={path} />;
   else page = <NotFound />;
-  const known = ['/', '/templates', '/builder', '/import', '/ai-writer'].includes(path);
+  const known = isKnownPath(path);
   useHead(path, params, known);
   const isBuilder = path.startsWith('/builder');
   return (

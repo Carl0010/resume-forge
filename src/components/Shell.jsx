@@ -22,6 +22,7 @@ export function Logo() {
 const LINKS = [
   { href: '/templates', label: 'Templates', match: '/templates' },
   { href: '/builder', label: 'Builder', match: '/builder' },
+  { href: '/guides', label: 'Guides', match: '/guides' },
   { href: '/import', label: 'AI Import', match: '/import' },
   { href: '/ai-writer', label: 'AI Writer', match: '/ai-writer', soon: true },
 ];
@@ -125,6 +126,13 @@ export function Footer() {
             <a href="/templates/executive">Executive CVs</a>
           </div>
           <div>
+            <h4>Guides</h4>
+            <a href="/guides/fresher-resume">Fresher resume</a>
+            <a href="/guides/ats-friendly-resume">ATS-friendly tips</a>
+            <a href="/guides/resume-summary-examples">Summary examples</a>
+            <a href="/guides">All guides</a>
+          </div>
+          <div>
             <h4>AI tools</h4>
             <a href="/import">Import an old resume</a>
             <a href="/ai-writer">AI Writer (soon)</a>
@@ -137,7 +145,15 @@ export function Footer() {
           </div>
         </div>
       </div>
-      <div className="footer-base">© {new Date().getFullYear()} {APP_NAME}. Made for people who need a resume tonight.</div>
+      <div className="footer-base">
+        <nav className="footer-legal" aria-label="About and legal">
+          <a href="/about">About</a>
+          <a href="/contact">Contact</a>
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+        </nav>
+        © {new Date().getFullYear()} {APP_NAME}. Made for people who need a resume tonight.
+      </div>
     </footer>
   );
 }
