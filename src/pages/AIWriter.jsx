@@ -56,7 +56,7 @@ export default function AIWriter() {
             Get early access
           </button>
         )}
-        <a className="btn ghost" href="#/builder">Build manually for now</a>
+        <a className="btn ghost" href="/builder">Build manually for now</a>
       </div>
     </div>
   );

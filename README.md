@@ -11,7 +11,11 @@ npm run dev        # http://localhost:5173
 npm run build      # static site in dist/ — host on Firebase Hosting, Netlify, Vercel, S3…
 ```
 
-Routing is hash-based (`#/builder`), so any static host works with no rewrite rules.
+Routing uses real URLs (`/builder`, `/templates/student`) for SEO. `npm run build` also pre-renders a static HTML page per route
+(title, description, canonical, social tags, crawlable fallback content) and writes `sitemap.xml` and `robots.txt` — see `scripts/prerender.mjs`.
+Page titles/descriptions/intro copy live in `src/seo-data.js`. The host needs an SPA fallback to `index.html`; `vercel.json` already has it
+(Netlify: add `/* /index.html 200` to `_redirects`). Set `SITE_URL` at build time if you move to a custom domain, and update `SITE_URL` in `src/seo-data.js` and the URLs in `index.html`.
+Old `#/…` links are upgraded to real paths automatically.
 
 ## What's inside
 

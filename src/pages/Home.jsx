@@ -3,6 +3,7 @@ import { TEMPLATES } from '../templates/registry.js';
 import { sampleResume } from '../data/samples.js';
 import { ScaledResume, Ico } from '../components/ui.jsx';
 import { navigate, useResume } from '../store.jsx';
+import { FAQ } from '../seo-data.js';
 
 const FEATURED = ['harvard', 'metro', 'summit', 'elegant', 'chrono', 'executive-pro'];
 
@@ -21,13 +22,6 @@ const AUDIENCES = [
   },
 ];
 
-const FAQ = [
-  ['Is it really free?', 'Yes. Every template, the live preview and PDF download are free. There is no paid tier hiding behind the download button and no watermark.'],
-  ['Do I need to create an account?', 'No. Your resume is saved automatically in this browser. Sign-in with Google is only needed for AI features such as importing an old resume.'],
-  ['Will my resume get past ATS software?', 'Templates tagged “ATS-friendly” use a single reading order, real text and standard headings, which is what applicant tracking systems parse most reliably.'],
-  ['How do I download a PDF?', 'Click “Download PDF” in the builder and choose “Save as PDF” in the print dialog. The text stays selectable, which recruiters and ATS tools need.'],
-  ['Can I change fonts and colours?', 'Yes. Open Design → Advanced settings to change the accent colour, text colour, fonts, size, spacing and margins. Templates look right without touching these.'],
-];
 
 export default function Home() {
   const { setTemplate } = useResume();
@@ -55,8 +49,8 @@ export default function Home() {
             No watermark, no hidden charges.
           </p>
           <div className="hero-cta">
-            <a className="btn primary lg" href="#/builder">Start building <Ico n="chevron" size={16} /></a>
-            <a className="btn text lg" href="#/import"><Ico n="upload" /> or import an old resume</a>
+            <a className="btn primary lg" href="/builder">Start building <Ico n="chevron" size={16} /></a>
+            <a className="btn text lg" href="/import"><Ico n="upload" /> or import an old resume</a>
           </div>
           <dl className="hero-facts">
             <div><dt>{TEMPLATES.length}</dt><dd>templates</dd></div>
@@ -107,7 +101,7 @@ export default function Home() {
               <div className="aud-body">
                 <h3>{a.title}</h3>
                 <p className="muted">{a.text}</p>
-                <a className="link" href={`#/templates?c=${a.cat}`}>See {a.cat === 'professional' ? 'corporate' : a.cat} templates <Ico n="chevron" size={14} /></a>
+                <a className="link" href={`/templates/${a.cat}`}>See {a.cat === 'professional' ? 'corporate' : a.cat} templates <Ico n="chevron" size={14} /></a>
               </div>
             </article>
           ))}
@@ -120,7 +114,7 @@ export default function Home() {
             <h2>Popular templates</h2>
             <p className="muted">Click any design to start with it. You can switch templates later without retyping.</p>
           </div>
-          <a className="btn ghost" href="#/templates">Browse all {TEMPLATES.length}</a>
+          <a className="btn ghost" href="/templates">Browse all {TEMPLATES.length}</a>
         </div>
         <div className="tpl-grid">
           {FEATURED.map((id) => {
@@ -161,13 +155,13 @@ export default function Home() {
           <span className="pill">AI · sign-in required</span>
           <h3>Have an old resume?</h3>
           <p>Upload a PDF, Word file or even a photo. Our AI reads it and rebuilds it in the template you choose.</p>
-          <a className="btn primary" href="#/import"><Ico n="upload" /> Import with AI</a>
+          <a className="btn primary" href="/import"><Ico n="upload" /> Import with AI</a>
         </div>
         <div className="ai-card muted-card">
           <span className="pill soon">Coming soon</span>
           <h3>Write it with AI</h3>
           <p>Answer a few questions and let AI draft your summary and achievement bullets.</p>
-          <a className="btn ghost" href="#/ai-writer">Learn more</a>
+          <a className="btn ghost" href="/ai-writer">Learn more</a>
         </div>
       </section>
 

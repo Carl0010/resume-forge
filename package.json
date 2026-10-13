@@ -6,7 +6,7 @@
   "description": "Free resume & CV builder with 50 templates, live preview, no login. AI import (login) and AI writer (coming soon).",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

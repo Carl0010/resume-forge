@@ -260,7 +260,7 @@ export default function Builder({ params }) {
     <div className="builder" data-view={mobileView}>
       <div className="toolbar">
         <div className="tb-left">
-          <a href="#/" className="tb-home" title="ResumeForge home" aria-label="ResumeForge home"><Ico n="home" size={17} /></a>
+          <a href="/" className="tb-home" title="ResumeForge home" aria-label="ResumeForge home"><Ico n="home" size={17} /></a>
           <button className="tb-tpl" onClick={() => { setTab('design'); setMobileView('edit'); }} title="Change template">
             <Ico n="layout" size={16} /> <span>{tpl.name}</span>
           </button>
@@ -333,7 +333,7 @@ export default function Builder({ params }) {
           <h2 id="ai-title">AI writing assistant is on its way</h2>
           <p className="muted">Soon you’ll be able to generate a summary, rewrite bullets with stronger action verbs and tailor your resume to a job description. It will need a free sign-in.</p>
           <div className="soon-actions">
-            <a className="btn primary" href="#/ai-writer" onClick={() => setAi(false)}>See what’s planned</a>
+            <a className="btn primary" href="/ai-writer" onClick={() => setAi(false)}>See what’s planned</a>
             <button className="btn ghost" onClick={() => setAi(false)}>Keep editing</button>
           </div>
         </div>

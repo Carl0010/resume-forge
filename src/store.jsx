@@ -4,28 +4,51 @@ import authProvider from './services/authProvider.js';
 import { normalizeResume, emptyResume } from './data/schema.js';
 import { sampleResume } from './data/samples.js';
 
-/* ───────── Router (hash based, works on any static host) ───────── */
-function parseHash() {
-  const h = window.location.hash.replace(/^#/, '') || '/';
-  const [path, qs] = h.split('?');
-  const params = Object.fromEntries(new URLSearchParams(qs || ''));
-  return { path: path || '/', params };
+/* ───────── Router (History API; needs an SPA fallback on the host — see vercel.json) ───────── */
+// Old hash links (#/builder) are upgraded to real paths so existing bookmarks keep working.
+if (typeof window !== 'undefined' && window.location.hash.startsWith('#/')) {
+  window.history.replaceState(null, '', window.location.hash.slice(1));
+}
+function parseLocation() {
+  let path = window.location.pathname.replace(/\/+$/, '') || '/';
+  const params = Object.fromEntries(new URLSearchParams(window.location.search));
+  const m = path.match(/^\/templates\/([a-z-]+)$/);
+  if (m) {
+    path = '/templates';
+    params.c = m[1];
+  }
+  return { path, params };
 }
 export function useRoute() {
-  const [route, setRoute] = useState(parseHash);
+  const [route, setRoute] = useState(parseLocation);
   useEffect(() => {
-    const on = () => {
-      setRoute(parseHash());
-      window.scrollTo(0, 0);
+    const on = () => setRoute(parseLocation());
+    window.addEventListener('popstate', on);
+    window.addEventListener('rf:navigate', on);
+    return () => {
+      window.removeEventListener('popstate', on);
+      window.removeEventListener('rf:navigate', on);
     };
-    window.addEventListener('hashchange', on);
-    return () => window.removeEventListener('hashchange', on);
   }, []);
   return route;
 }
 export const navigate = (to) => {
-  window.location.hash = to;
+  window.history.pushState(null, '', to);
+  window.dispatchEvent(new Event('rf:navigate'));
+  window.scrollTo(0, 0);
 };
+// Turn plain <a href="/path"> clicks into client-side navigation (keeps real, crawlable links in the HTML).
+export function installLinkHandler() {
+  document.addEventListener('click', (e) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = e.target.closest && e.target.closest('a[href]');
+    if (!a || a.target || a.hasAttribute('download')) return;
+    const href = a.getAttribute('href');
+    if (!href || !href.startsWith('/') || href.startsWith('//')) return;
+    e.preventDefault();
+    navigate(href);
+  });
+}
 
 /* ───────── Toasts ───────── */
 const ToastCtx = createContext(() => {});

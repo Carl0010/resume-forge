@@ -3,10 +3,12 @@ import { TEMPLATES, CATEGORIES, LAYOUTS } from '../templates/registry.js';
 import { sampleResume } from '../data/samples.js';
 import { ScaledResume, Modal, Ico } from '../components/ui.jsx';
 import { navigate, useResume } from '../store.jsx';
+import { ROUTES } from '../seo-data.js';
 
 export default function Templates({ params }) {
   const { resume, setTemplate } = useResume();
-  const [cat, setCat] = useState(params.c || 'all');
+  const cat = CATEGORIES.some((c) => c.id === params.c) ? params.c : 'all';
+  const meta = ROUTES[cat === 'all' ? '/templates' : '/templates/' + cat];
   const [q, setQ] = useState('');
   const [mine, setMine] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -27,16 +29,17 @@ export default function Templates({ params }) {
   return (
     <div className="wrap page">
       <div className="page-head">
-        <h1>Resume templates</h1>
-        <p className="muted">
-          {TEMPLATES.length} designs across 8 layout families. Templates marked <span className="pill ats">ATS</span> use a single reading order and standard headings for applicant tracking systems.
+        <h1>{meta.h1}</h1>
+        <p className="muted">{meta.intro}</p>
+        <p className="muted small">
+          {TEMPLATES.length} designs across 8 layout families. Templates marked <span className="pill ats">ATS</span> use a single reading order and standard headings for reliable parsing.
         </p>
       </div>
 
       <div className="filters">
         <div className="chips" role="tablist" aria-label="Template categories">
           {CATEGORIES.map((c) => (
-            <button key={c.id} role="tab" aria-selected={cat === c.id} className={'chip' + (cat === c.id ? ' on' : '')} onClick={() => setCat(c.id)}>
+            <button key={c.id} role="tab" aria-selected={cat === c.id} className={'chip' + (cat === c.id ? ' on' : '')} onClick={() => navigate(c.id === 'all' ? '/templates' : '/templates/' + c.id)}>
               {c.label}
               <span className="chip-n">{c.id === 'all' ? TEMPLATES.length : TEMPLATES.filter((t) => t.tags.includes(c.id)).length}</span>
             </button>

@@ -5,7 +5,7 @@ import { Ico, GoogleG, Modal } from './ui.jsx';
 
 export function Logo() {
   return (
-    <a href="#/" className="logo" aria-label={`${APP_NAME} home`}>
+    <a href="/" className="logo" aria-label={`${APP_NAME} home`}>
       <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
         <rect x="5" y="3" width="20" height="26" rx="3" fill="var(--primary)" />
         <rect x="9" y="8" width="9" height="2.4" rx="1.2" fill="#fff" />
@@ -20,10 +20,10 @@ export function Logo() {
 }
 
 const LINKS = [
-  { href: '#/templates', label: 'Templates', match: '/templates' },
-  { href: '#/builder', label: 'Builder', match: '/builder' },
-  { href: '#/import', label: 'AI Import', match: '/import' },
-  { href: '#/ai-writer', label: 'AI Writer', match: '/ai-writer', soon: true },
+  { href: '/templates', label: 'Templates', match: '/templates' },
+  { href: '/builder', label: 'Builder', match: '/builder' },
+  { href: '/import', label: 'AI Import', match: '/import' },
+  { href: '/ai-writer', label: 'AI Writer', match: '/ai-writer', soon: true },
 ];
 
 const THEME_KEY = 'resumeforge-theme';
@@ -100,7 +100,7 @@ export function Navbar({ path }) {
           ) : (
             <button className="btn ghost sm" onClick={() => openLogin('')}>Sign in</button>
           )}
-          <a href="#/builder" className="btn primary sm hide-sm">Build my resume</a>
+          <a href="/builder" className="btn primary sm hide-sm">Build my resume</a>
           <button className="icon-btn show-sm" onClick={() => setOpen((o) => !o)} aria-label="Menu"><Ico n="menu" /></button>
         </div>
       </div>
@@ -119,15 +119,15 @@ export function Footer() {
         <div className="footer-cols">
           <div>
             <h4>Build</h4>
-            <a href="#/templates">All templates</a>
-            <a href="#/builder">Resume builder</a>
-            <a href="#/templates?c=student">Student resumes</a>
-            <a href="#/templates?c=executive">Executive CVs</a>
+            <a href="/templates">All templates</a>
+            <a href="/builder">Resume builder</a>
+            <a href="/templates/student">Student resumes</a>
+            <a href="/templates/executive">Executive CVs</a>
           </div>
           <div>
             <h4>AI tools</h4>
-            <a href="#/import">Import an old resume</a>
-            <a href="#/ai-writer">AI Writer (soon)</a>
+            <a href="/import">Import an old resume</a>
+            <a href="/ai-writer">AI Writer (soon)</a>
           </div>
           <div>
             <h4>Promise</h4>
