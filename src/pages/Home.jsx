@@ -60,7 +60,7 @@ export default function Home() {
           </div>
           <dl className="hero-facts">
             <div><dt>{TEMPLATES.length}</dt><dd>templates</dd></div>
-            <div><dt>₹0</dt><dd>to download</dd></div>
+            <div className="fact-hero"><dt><mark>No watermark</mark></dt><dd>on any download</dd></div>
             <div><dt>2 min</dt><dd>to a first draft</dd></div>
           </dl>
           <p className="hero-ats tiny muted">Layouts built to parse cleanly in Workday, Greenhouse, Lever and Taleo.</p>
@@ -89,7 +89,7 @@ export default function Home() {
       <section className="strip">
         <div className="wrap strip-in">
           <div><strong>{TEMPLATES.length}</strong><span>templates</span></div>
-          <div><strong>₹0</strong><span>to download</span></div>
+          <div><strong>Free</strong><span>every template, always</span></div>
           <div><strong>0</strong><span>sign-ups needed</span></div>
           <div><strong>A4 / Letter</strong><span>page sizes</span></div>
         </div>
