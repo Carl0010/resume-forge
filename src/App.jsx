@@ -29,8 +29,9 @@ function Routes() {
   const isBuilder = path.startsWith('/builder');
   return (
     <div className={'app' + (isBuilder ? ' app-builder' : '')}>
+      <a className="skip-link" href="#main" onClick={(e) => { e.preventDefault(); const m = document.getElementById("main"); if (m) { m.focus(); m.scrollIntoView(); } }}>Skip to content</a>
       {!isBuilder && <Navbar path={path} />}
-      <main className="app-main">{page}</main>
+      <main id="main" className="app-main" tabIndex={-1}>{page}</main>
       {!isBuilder && <Footer />}
       <LoginModal />
     </div>
