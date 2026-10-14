@@ -3,11 +3,13 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Free resume & CV builder with 50 templates, live preview, no login. AI import (login) and AI writer (coming soon).",
+  "description": "Free resume & CV builder with 52 templates, live preview, no login. AI import (login) and AI writer (coming soon).",
   "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/prerender.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/browser.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

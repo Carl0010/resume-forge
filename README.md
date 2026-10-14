@@ -85,3 +85,38 @@ are placeholders ready for the feature once it's defined. `ENDPOINTS.aiWriter` i
 ## PDF export
 “Download PDF” opens the browser print dialog with a print stylesheet that outputs only the resume (A4 or Letter, colours preserved).
 Users pick “Save as PDF”. Text stays selectable, which ATS parsers need.
+
+## Template quality and validation
+
+All 52 templates default to at least 10.5pt body type, grouped skills and no photo.
+The Design panel offers Comfortable / Compact spacing, a simple single-column
+layout, and student, professional, executive and academic section presets.
+Presets reorder/reveal sections without deleting entries. Template selection
+can reset presentation defaults independently of the content.
+
+The gallery recommends three designs based on career stage, role and style,
+compares up to three designs using the same content, and previews every page.
+Nine illustrative sample resumes cover students, professionals, executives,
+academics, engineering, design, finance, sales and healthcare.
+
+Preview and PDF share explicit paginated DOM, including page numbering and
+A4 / Letter dimensions. Printing uses zero browser margins because padding is
+included inside each page. Use 100% scale, turn off browser headers/footers and
+use the selected paper size. Fonts and images can change pagination when they
+load; export waits for fonts. Unusually large entries split at paragraph, bullet
+or word boundaries. The error state blocks export if content cannot be laid out.
+
+Run `npm test` for link safety, backup compatibility, preset preservation and
+recommendation checks. Run `npm run build` for the production bundle and all
+23 prerendered routes. Browser/PDF regression checks are documented in
+`tests/BROWSER.md`. “Simple” denotes a design property, not certification for
+Workday, Greenhouse or any other hiring system. PDF text extraction checks
+cannot establish compatibility with every third-party parser.
+
+`src/services/usage.js` records aggregate counts locally and dispatches an
+`rf:usage` event with only an event name and template ID. No analytics endpoint
+or visitor identifiers are configured. `getUsageCounts()` reads local counts.
+`pdf_requested` and `print_dialog_closed` must not be reported as completed PDF
+saves: the browser does not reveal that outcome. `text_export_created` records
+creation of the text download. Add an approved analytics integration separately
+if site-wide conversion reporting is needed, and update the privacy policy.

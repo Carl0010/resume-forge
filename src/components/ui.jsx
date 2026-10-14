@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Resume from '../templates/Resume.jsx';
+import PagedResume from './PagedResume.jsx';
 
 const PATHS = {
   plus: 'M12 5v14M5 12h14',
@@ -74,6 +75,14 @@ export function Modal({ open, onClose, children, labelledBy, wide }) {
 export function ScaledResume({ resume, templateId, overrides, pageSize = 'A4', clip = true, maxHeightRatio = 1.414 }) {
   const box = useRef(null);
   const [w, setW] = useState(0);
+  const inner = useRef(null);
+  const [height, setHeight] = useState(1123);
+  useLayoutEffect(() => {
+    if (!inner.current) return;
+    const ro = new ResizeObserver(() => setHeight(inner.current.offsetHeight));
+    ro.observe(inner.current);
+    return () => ro.disconnect();
+  }, []);
   useLayoutEffect(() => {
     if (!box.current) return;
     const ro = new ResizeObserver(([e]) => setW(e.contentRect.width));
@@ -83,9 +92,9 @@ export function ScaledResume({ resume, templateId, overrides, pageSize = 'A4', c
   const pageW = pageSize === 'Letter' ? 816 : 794;
   const scale = w ? w / pageW : 0.3;
   return (
-    <div ref={box} className="scaled" style={{ height: clip ? w * maxHeightRatio : undefined }}>
-      <div className="scaled-inner" style={{ transform: `scale(${scale})`, width: pageW }}>
-        <Resume resume={resume} templateId={templateId} overrides={overrides} pageSize={pageSize} />
+    <div ref={box} className="scaled" style={{ height: clip ? w * maxHeightRatio : height * scale }}>
+      <div ref={inner} className="scaled-inner" style={{ transform: `scale(${scale})`, width: pageW }}>
+        {clip ? <Resume resume={resume} templateId={templateId} overrides={overrides || {}} pageSize={pageSize} /> : <PagedResume resume={resume} templateId={templateId} overrides={overrides} pageSize={pageSize} />}
       </div>
     </div>
   );

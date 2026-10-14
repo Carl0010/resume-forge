@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { TEMPLATES, CATEGORIES, FONTS, getTemplate, resolveStyle } from '../templates/registry.js';
+import { CAREER_PRESETS, applyCareerPreset, sampleKeyFor } from '../data/presets.js';
 import { sampleResume } from '../data/samples.js';
 import { ScaledResume, Ico } from '../components/ui.jsx';
 import { useResume } from '../store.jsx';
@@ -38,15 +39,16 @@ export default function DesignPanel() {
   const { resume, update, setTemplate } = useResume();
   const [cat, setCat] = useState('all');
   const [adv, setAdv] = useState(false);
-  const sample = useMemo(() => sampleResume('professional'), []);
+  const examples = useMemo(() => Object.fromEntries(TEMPLATES.map(t => [t.id, sampleResume(sampleKeyFor(t))])), []);
   const tid = resume.settings.templateId;
   const ov = resume.settings.overrides || {};
   const s = resolveStyle(tid, ov);
   const base = getTemplate(tid);
   const setOv = (k, v) => update((r) => ((r.settings.overrides[k] = v), r));
   const changed = Object.keys(ov).filter((k) => ov[k] !== '' && ov[k] != null).length;
-  const list = TEMPLATES.filter((t) => cat === 'all' || t.tags.includes(cat));
-  const data = resume.__example ? sample : resume;
+  const list = TEMPLATES.filter((t) => cat === 'all' || (cat === 'ats' ? t.ats : t.tags.includes(cat)));
+  const data = resume;
+  const [preset, setPreset] = useState(resume.settings.careerPreset || 'professional');
 
   return (
     <div className="design">
@@ -64,14 +66,25 @@ export default function DesignPanel() {
           <div className="mini-grid">
             {list.map((t) => (
               <button key={t.id} className={'mini' + (t.id === tid ? ' on' : '')} onClick={() => setTemplate(t.id)} aria-pressed={t.id === tid}>
-                <ScaledResume resume={data} templateId={t.id} />
-                <span>{t.name}{t.ats ? ' · ATS' : ''}</span>
+                <ScaledResume resume={resume.__example ? examples[t.id] : data} templateId={t.id} overrides={ov} />
+                <span>{t.name}{t.ats ? ' · Simple' : ''}</span>
               </button>
             ))}
           </div>
         </div>
       </section>
 
+      <section className="card">
+        <div className="card-head static"><span className="card-title">Reading & structure</span></div>
+        <div className="card-body fields">
+          <div className="field"><label htmlFor="density">Reading comfort</label><select id="density" className="input" value={ov.density || 'default'} onChange={e => update(r => { const density = e.target.value; Object.assign(r.settings.overrides, density === 'compact' ? { density, fs: 10.5, lh: 1.4, margin: 14, gap: 10 } : { density, fs: 11, lh: 1.45, margin: 16, gap: 13 }); return r; })}><option value="default" disabled>Template default</option><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select></div>
+          <label className="switch"><input type="checkbox" checked={!!ov.simpleLayout} onChange={e => setOv('simpleLayout', e.target.checked)} />Simple single-column layout</label>
+          <p className="muted small">Keeps your content, colors and fonts. Uses clear section headings, grouped skills and no photo; preview and PDF both use this layout.</p>
+          <div className="field"><label htmlFor="career-preset">Suggested section structure</label><select id="career-preset" className="input" value={preset} onChange={e => setPreset(e.target.value)}>{Object.entries(CAREER_PRESETS).map(([k,p]) => <option key={k} value={k}>{p.label}</option>)}</select><small className="muted">{CAREER_PRESETS[preset].description}. Keeps all entries; reveals relevant sections.</small><button className="btn ghost sm" onClick={() => update(r => applyCareerPreset(r, preset))}>Apply section structure</button></div>
+          <p className="muted small">For a shorter resume, remove less relevant bullets or hide optional sections before shrinking the type. A longer career can use two pages.</p>
+          {s.fs < 10 && <p className="readability-warning" role="status">Text below 10pt can be difficult to read. Try Comfortable spacing or shorten your content.</p>}
+        </div>
+      </section>
       <section className="card">
         <div className="card-head static"><span className="card-title">Page</span></div>
         <div className="card-body fields">
@@ -90,6 +103,7 @@ export default function DesignPanel() {
               <option value="off">Hide photo</option>
             </select>
           </div>
+          <p className="muted small">Photos are optional. Follow the employer’s instructions and local hiring conventions; leave photos off for applications that do not request one. A photo appears only after you upload it.</p>
         </div>
       </section>
 
@@ -132,7 +146,7 @@ export default function DesignPanel() {
               <div className="field half">
                 <label htmlFor="sel-skills">Skills display</label>
                 <select id="sel-skills" className="input" value={s.skills} onChange={(e) => setOv('skills', e.target.value)}>
-                  {[['inline', 'Comma list'], ['tags', 'Tags'], ['list', 'Bullets'], ['bars', 'Level bars'], ['dots', 'Level dots']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  {[['grouped', 'Grouped skills'], ['inline', 'Comma list'], ['tags', 'Tags'], ['list', 'Bullets'], ['bars', 'Level bars'], ['dots', 'Level dots']].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>
               </div>
             </div>

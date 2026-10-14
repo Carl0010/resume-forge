@@ -10,7 +10,7 @@ export const SITE_NAME = 'ResumeForge';
 export const FAQ = [
   ['Is it really free?', 'Yes. Every template, the live preview and PDF download are free. There is no paid tier hiding behind the download button and no watermark.'],
   ['Do I need to create an account?', 'No. Your resume is saved automatically in this browser. Sign-in with Google is only needed for AI features such as importing an old resume.'],
-  ['Will my resume get past ATS software?', 'Templates tagged “ATS-friendly” use a single reading order, real text and standard headings, which is what applicant tracking systems parse most reliably.'],
+  ['Will my resume get past ATS software?', 'Templates marked “Simple” use a single-column design. Exported PDFs contain selectable text, but compatibility varies between hiring systems. Check the file and follow the employer’s instructions.'],
   ['How do I download a PDF?', 'Click “Download PDF” in the builder and choose “Save as PDF” in the print dialog. The text stays selectable, which recruiters and ATS tools need.'],
   ['Can I change fonts and colours?', 'Yes. Open Design → Advanced settings to change the accent colour, text colour, fonts, size, spacing and margins. Templates look right without touching these.'],
 ];
@@ -19,9 +19,9 @@ export const FAQ = [
 export const ROUTES = {
   '/': {
     title: 'Free Resume Builder & CV Maker | ATS Templates, No Watermark',
-    description: 'Build a professional resume or CV online for free. 50+ ATS-friendly resume templates, live preview and a clean PDF download with no watermark and no login.',
+    description: 'Build a professional resume or CV online for free. 52 resume templates, including simple single-column designs, live preview and a clean PDF download with no watermark and no login.',
     h1: 'A resume you’re proud of, before the deadline.',
-    intro: 'ResumeForge is a free online resume builder and CV maker. Pick from more than 50 recruiter-tested, ATS-friendly resume templates, edit with a live preview, and download a clean PDF with no watermark. No sign-up needed.',
+    intro: 'ResumeForge is a free online resume builder and CV maker. Pick from 52 resume templates with readable type and a simple single-column option, edit with a live preview, and download a clean PDF with no watermark. No sign-up needed.',
   },
   '/templates': {
     title: 'Free Resume Templates – 50+ ATS-Friendly CV Designs | ResumeForge',
@@ -31,7 +31,7 @@ export const ROUTES = {
   },
   '/templates/ats': {
     title: 'ATS-Friendly Resume Templates – Free, Single-Column | ResumeForge',
-    description: 'Free ATS-friendly resume templates with a single reading order, real text and standard headings, built to parse cleanly in Workday, Greenhouse, Lever and Taleo.',
+    description: 'Simple single-column resume templates with clear headings and selectable text. Follow the employer’s file-format instructions.',
     h1: 'ATS-friendly resume templates',
     intro: 'Applicant tracking systems read resumes best when the layout is simple: one reading order, real selectable text and standard section headings. These templates are built that way, and every one is free with no watermark.',
   },

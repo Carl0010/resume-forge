@@ -14,7 +14,7 @@ const AUDIENCES = [
   },
   {
     key: 'professional', title: 'Corporate employees', tpl: 'stanford', cat: 'professional',
-    text: 'Clean, ATS-friendly formats that put measurable achievements first and pass Workday, Taleo and Greenhouse.',
+    text: 'Clear formats that put measurable achievements first, with a simple single-column option for applications.',
   },
   {
     key: 'executive', title: 'Senior leaders & executives', tpl: 'pinnacle', cat: 'executive',
@@ -45,7 +45,7 @@ export default function Home() {
             A resume you’re proud of, <mark>before the deadline.</mark>
           </h1>
           <p className="lead">
-            Pick from {TEMPLATES.length} recruiter-tested templates, type on the left, watch it update on the right, and download a clean PDF.
+            Pick from {TEMPLATES.length} readable templates, type on the left, watch it update on the right, and download a clean PDF.
             No watermark, no hidden charges.
           </p>
           <div className="hero-cta">
@@ -57,7 +57,7 @@ export default function Home() {
             <div className="fact-hero"><dt><mark>No watermark</mark></dt><dd>on any download</dd></div>
             <div><dt>2 min</dt><dd>to a first draft</dd></div>
           </dl>
-          <p className="hero-ats tiny muted">Layouts built to parse cleanly in Workday, Greenhouse, Lever and Taleo.</p>
+          <p className="hero-ats tiny muted">Layouts with clear headings and selectable text. Follow the employer’s file-format instructions.</p>
         </div>
 
         <div className="hero-art" aria-hidden="true">
@@ -75,7 +75,7 @@ export default function Home() {
             </div>
           </div>
           <div className="float f-pdf"><Ico n="download" size={15} /> PDF ready</div>
-          <div className="float f-ats"><Ico n="check" size={15} /> ATS-friendly</div>
+          <div className="float f-ats"><Ico n="check" size={15} /> Simple structure</div>
           <div className="hero-side"><ScaledResume resume={samples.student} templateId="campus" /></div>
         </div>
       </section>
@@ -124,7 +124,7 @@ export default function Home() {
                 <div className="tpl-thumb"><ScaledResume resume={samples.professional} templateId={id} /></div>
                 <div className="tpl-meta">
                   <strong>{t.name}</strong>
-                  {t.ats && <span className="pill ats">ATS</span>}
+                  {t.ats && <span className="pill ats">Simple</span>}
                 </div>
               </button>
             );
@@ -137,7 +137,7 @@ export default function Home() {
         <ol className="steps">
           <li>
             <h3>Choose a template</h3>
-            <p className="muted">Filter by ATS-friendly, student, corporate, executive, creative or academic.</p>
+            <p className="muted">Filter by simple structure, student, corporate, executive, creative or academic.</p>
           </li>
           <li>
             <h3>Fill in your details</h3>

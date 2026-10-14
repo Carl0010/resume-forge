@@ -1,5 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { storage } from './services/storage.js';
+import { applyCareerPreset } from './data/presets.js';
+import { recordUsage } from './services/usage.js';
 import authProvider from './services/authProvider.js';
 import { normalizeResume, emptyResume } from './data/schema.js';
 import { sampleResume } from './data/samples.js';
@@ -137,8 +139,20 @@ export function ResumeProvider({ children }) {
       resume,
       savedAt,
       update,
+      configureTemplate: (id, { overrides, preset } = {}) => {
+        recordUsage('template_selected', id);
+        if (resume.settings.templateId !== id) recordUsage('template_switched', id);
+        setResume(r => {
+          const next = { ...r, settings: { ...r.settings, templateId: id, overrides: overrides ?? r.settings.overrides } };
+          return preset ? applyCareerPreset(next, preset) : next;
+        });
+      },
       replace: (r, keepExampleFlag) => setResume(keepExampleFlag ? { ...normalizeResume(r), __example: true } : normalizeResume(r)),
-      setTemplate: (id) => update((r) => ((r.settings.templateId = id), r)),
+      setTemplate: (id) => {
+        recordUsage('template_selected', id);
+        if (resume.settings.templateId !== id) recordUsage('template_switched', id);
+        setResume(r => ({ ...r, settings: { ...r.settings, templateId: id } }));
+      },
       startBlank: () => {
         const b = emptyResume();
         setResume((r) => ({ ...b, settings: { ...r.settings } }));

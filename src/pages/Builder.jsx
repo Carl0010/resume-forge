@@ -1,7 +1,9 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import Resume, { resumeToText } from '../templates/Resume.jsx';
-import { getTemplate, resolveStyle } from '../templates/registry.js';
+import { resumeToText } from '../templates/Resume.jsx';
+import { getTemplate } from '../templates/registry.js';
+import PagedResume from '../components/PagedResume.jsx';
+import { recordUsage } from '../services/usage.js';
 import { SAMPLES } from '../data/samples.js';
 import { normalizeResume } from '../data/schema.js';
 import Editor from '../builder/Editor.jsx';
@@ -29,6 +31,7 @@ function Preview({ resume }) {
   const [avail, setAvail] = useState(0);
   const [zoom, setZoom] = useState(null); // null = fit width
   const [h, setH] = useState(1123);
+  const [pages, setPages] = useState(0);
   const size = PAGE[resume.settings.pageSize] || PAGE.A4;
 
   useLayoutEffect(() => {
@@ -45,13 +48,6 @@ function Preview({ resume }) {
 
   const fit = avail ? Math.min(1, (avail - 32) / size.w) : 0.6;
   const scale = zoom || fit;
-  // Mirror the print rules: first page has no top margin, later pages have top + bottom margins.
-  const st = resolveStyle(resume.settings.templateId, resume.settings.overrides);
-  const mPx = Math.round(st.margin * 0.8) * 3.78;
-  const first = size.h - mPx;
-  const rest = size.h - 2 * mPx;
-  const pages = h - 4 <= first ? 1 : 1 + Math.ceil((h - 4 - first) / rest);
-  const breakAt = (i) => first + i * rest;
 
   return (
     <div className="preview" ref={wrap}>
@@ -60,15 +56,12 @@ function Preview({ resume }) {
         <button className="zoom-val" onClick={() => setZoom(null)} title="Fit to width">{Math.round(scale * 100)}%</button>
         <button className="icon-btn" onClick={() => setZoom(Math.min(2, +(scale + 0.1).toFixed(2)))} aria-label="Zoom in"><Ico n="zoomIn" size={17} /></button>
         <span className="zoom-sep" />
-        <span className={'pages' + (pages > 2 ? ' warn' : '')}>{pages} page{pages > 1 ? 's' : ''}</span>
+        <span className={'pages' + (pages > 2 ? ' warn' : '')}>{pages ? `${pages} page${pages > 1 ? 's' : ''}` : 'Preparing…'}</span>
       </div>
       <div className="paper-scroll">
         <div className="paper-frame" style={{ width: size.w * scale, height: Math.max(h, size.h) * scale }}>
           <div className="paper-scale" style={{ transform: `scale(${scale})`, width: size.w }}>
-            <div ref={paper}><Resume resume={resume} pageSize={resume.settings.pageSize} /></div>
-            {Array.from({ length: pages - 1 }, (_, i) => (
-              <div key={i} className="page-break" style={{ top: breakAt(i) }}><span>Page {i + 2}</span></div>
-            ))}
+            <div ref={paper}><PagedResume resume={resume} pageSize={resume.settings.pageSize} onPagination={setPages} /></div>
           </div>
         </div>
       </div>
@@ -223,19 +216,33 @@ export default function Builder({ params }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.t]);
 
+  useLayoutEffect(() => {
+    const style = document.createElement('style');
+    style.id = 'print-page-style';
+    style.textContent = `@page{size:${resume.settings.pageSize === 'Letter' ? 'letter' : 'A4'};margin:0}`;
+    document.head.append(style);
+    return () => style.remove();
+  }, [resume.settings.pageSize]);
+
   const fileBase = (resume.personal.fullName || 'resume').trim().replace(/\s+/g, '_');
 
-  const printPdf = () => {
+  const printPdf = async () => {
     setMenu(false);
-    const s = resolveStyle(resume.settings.templateId, resume.settings.overrides);
+    await document.fonts?.ready;
+    if (!document.querySelector('#print-root .resume-pages[data-ready="true"] .rs-page') || document.querySelector('#print-root .pagination-error')) {
+      toast('Wait for the pages to finish preparing before exporting.', 'err');
+      return;
+    }
     const st = document.getElementById('print-page-style') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'print-page-style' }));
     const size = resume.settings.pageSize === 'Letter' ? 'letter' : 'A4';
-    st.textContent = `@page{size:${size};margin:${Math.round(s.margin * 0.8)}mm 0}@page:first{margin-top:0}`;
+    st.textContent = `@page{size:${size};margin:0}`;
+    recordUsage('pdf_requested', resume.settings.templateId);
     const prev = document.title;
     document.title = fileBase;
     setTimeout(() => {
       try {
         window.print();
+        recordUsage('print_dialog_closed', resume.settings.templateId);
       } catch {
         toast('Press Ctrl+P (or Cmd+P) and choose “Save as PDF”.');
       }
@@ -284,7 +291,7 @@ export default function Builder({ params }) {
             {menu && (
               <div className="dropdown right" onMouseLeave={() => setMenu(false)}>
                 <button onClick={printPdf}><Ico n="file" size={16} /> PDF (print → Save as PDF)</button>
-                <button onClick={() => { setMenu(false); download(`${fileBase}.txt`, resumeToText(resume), 'text/plain'); }}><Ico n="file" size={16} /> Plain text for job portals</button>
+                <button onClick={() => { setMenu(false); download(`${fileBase}.txt`, resumeToText(resume), 'text/plain'); recordUsage('text_export_created', resume.settings.templateId); }}><Ico n="file" size={16} /> Plain text for job portals</button>
                 <button onClick={() => { setMenu(false); download(`${fileBase}.resume.json`, JSON.stringify({ app: 'ResumeForge', version: 1, resume }, null, 2), 'application/json'); }}><Ico n="download" size={16} /> Backup file (.json)</button>
                 <button onClick={() => { setMenu(false); fileRef.current.click(); }}><Ico n="upload" size={16} /> Restore from backup</button>
                 <hr />
@@ -323,7 +330,7 @@ export default function Builder({ params }) {
       </button>
 
       {createPortal(
-        <div id="print-root"><Resume resume={resume} pageSize={resume.settings.pageSize} /></div>,
+        <div id="print-root"><PagedResume resume={resume} pageSize={resume.settings.pageSize} /></div>,
         document.body
       )}
 

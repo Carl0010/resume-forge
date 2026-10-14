@@ -1,4 +1,5 @@
 import React from 'react';
+import { contactHref, webHref, linkLabel } from '../lib/links.js';
 import { FONTS, isDark, resolveStyle } from './registry.js';
 import { bulletsOf, sectionTitle, SIDE_SECTIONS } from '../data/schema.js';
 
@@ -21,6 +22,12 @@ const Icon = ({ k }) => {
   );
 };
 
+function Link({ value, kind }) {
+  const href = kind ? contactHref(kind, value) : webHref(value);
+  const label = ['email', 'phone', 'location'].includes(kind) ? value : linkLabel(value);
+  return href ? <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">{label}</a> : <span>{value}</span>;
+}
+
 const CONTACT_KEYS = ['email', 'phone', 'location', 'website', 'linkedin', 'github'];
 
 function Contacts({ p, icons, stacked }) {
@@ -31,7 +38,7 @@ function Contacts({ p, icons, stacked }) {
       {items.map((k) => (
         <span key={k} className="rs-contact">
           {icons && <Icon k={k} />}
-          <span>{p[k]}</span>
+          <Link kind={k} value={p[k]} />
         </span>
       ))}
     </div>
@@ -40,8 +47,7 @@ function Contacts({ p, icons, stacked }) {
 
 function Photo({ src, name }) {
   if (src) return <img className="rs-photo" src={src} alt="" />;
-  const initials = (name || '?').split(/\s+/).filter(Boolean).slice(0, 2).map((s) => s[0]).join('').toUpperCase();
-  return <div className="rs-photo rs-photo-ph">{initials || '?'}</div>;
+  return null;
 }
 
 function Level({ n, mode }) {
@@ -62,13 +68,13 @@ function Bullets({ text }) {
   return <ul className="rs-ul">{b.map((x, i) => <li key={i}>{x}</li>)}</ul>;
 }
 
-function Entry({ title, sub, date, meta, children }) {
+function Entry({ title, sub, date, meta, link, children }) {
   return (
     <div className="rs-item">
       <div className="rs-row">
         <div className="rs-head">
           {has(title) && <span className="rs-it">{title}</span>}
-          {has(sub) && <span className="rs-sub">{sub}</span>}
+          {has(sub) && <span className="rs-sub">{link ? <Link value={sub} /> : sub}</span>}
         </div>
         {has(date) && <div className="rs-date">{date}</div>}
       </div>
@@ -96,7 +102,7 @@ function SectionBody({ k, r, s, inSide }) {
       ));
     case 'projects':
       return r.projects.map((e) => (
-        <Entry key={e.id} title={e.name} sub={e.link} date={range(e.start, e.end)}>
+        <Entry key={e.id} title={e.name} sub={e.link} link date={range(e.start, e.end)}>
           <Bullets text={e.bullets} />
         </Entry>
       ));
@@ -106,15 +112,21 @@ function SectionBody({ k, r, s, inSide }) {
           <Bullets text={e.bullets} />
         </Entry>
       ));
+    case 'highlights':
+    case 'boards':
+    case 'research':
+    case 'teaching':
+    case 'grants':
+    case 'service':
     case 'custom':
-      return r.custom.map((e) => (
+      return (r[k] || []).map((e) => (
         <Entry key={e.id} title={e.title} sub={e.subtitle} date={e.date}>
           <Bullets text={e.bullets} />
         </Entry>
       ));
     case 'publications':
       return r.publications.map((e) => (
-        <Entry key={e.id} title={e.title} sub={e.publisher} date={e.date} meta={e.link} />
+        <Entry key={e.id} title={e.title} sub={e.publisher} date={e.date}><div className="rs-meta"><Link value={e.link} /></div></Entry>
       ));
     case 'certifications':
       return r.certifications.map((e) => <Entry key={e.id} title={e.name} sub={e.issuer} date={e.date} />);
@@ -129,6 +141,11 @@ function SectionBody({ k, r, s, inSide }) {
     case 'skills': {
       const list = r.skills.filter((x) => has(x.name));
       let mode = s.skills;
+      if (mode === 'grouped') {
+        const groups = new Map();
+        list.forEach(x => { const key = String(x.group || '').trim(); groups.set(key, [...(groups.get(key) || []), x.name]); });
+        return <div className="rs-skill-groups">{[...groups].map(([group, names]) => <p key={group} className="rs-p">{group && <strong>{group}: </strong>}{names.join(', ')}</p>)}</div>;
+      }
       if (!inSide && (mode === 'bars' || mode === 'dots') && s.layout !== 'twocol') mode = 'grid-' + mode;
       if (mode === 'inline') return <p className="rs-p">{list.map((x) => x.name).join('  •  ')}</p>;
       if (mode === 'tags') return <div className="rs-tags">{list.map((x) => <span key={x.id} className="rs-tag">{x.name}</span>)}</div>;
@@ -158,7 +175,7 @@ function SectionBody({ k, r, s, inSide }) {
   }
 }
 
-const isEmpty = (r, k) => (k === 'summary' ? !has(r.summary) : !(r[k] && r[k].length));
+const isEmpty = (r, k) => (k === 'summary' ? !has(r.summary) : !(r[k] || []).some(e => Object.entries(e).some(([key, value]) => !['id', 'level', 'group'].includes(key) && has(value))));
 
 function Section({ k, r, s, inSide }) {
   if (r.hidden[k] || isEmpty(r, k)) return null;
@@ -215,6 +232,7 @@ export default function Resume({ resume, templateId, overrides, pageSize = 'A4',
   const order = r.order;
   const attrs = {
     className: `rs ${className}`,
+    'data-template': tid,
     'data-layout': s.layout,
     'data-header': s.header,
     'data-title': s.title,
@@ -266,7 +284,7 @@ export default function Resume({ resume, templateId, overrides, pageSize = 'A4',
   );
 }
 
-// Plain-text export (ATS-safe .txt)
+// Plain-text export with explicit reading order.
 export function resumeToText(r) {
   const p = r.personal;
   const lines = [p.fullName, p.jobTitle, CONTACT_KEYS.map((k) => p[k]).filter(Boolean).join(' | '), ''];
@@ -274,7 +292,7 @@ export function resumeToText(r) {
     if (r.hidden[k] || isEmpty(r, k)) continue;
     lines.push(sectionTitle(r, k).toUpperCase());
     if (k === 'summary') lines.push(r.summary);
-    else if (k === 'skills') lines.push(r.skills.map((x) => x.name).join(', '));
+    else if (k === 'skills') lines.push(r.skills.filter(x => has(x.name)).map((x) => x.group ? `${x.group}: ${x.name}` : x.name).join(', '));
     else if (k === 'languages') lines.push(r.languages.map((x) => `${x.name}${x.fluency ? ` (${x.fluency})` : ''}`).join(', '));
     else if (k === 'interests') lines.push(r.interests.map((x) => x.name).join(', '));
     else
@@ -284,6 +302,10 @@ export function resumeToText(r) {
         const date = e.date || range(e.start, e.end);
         lines.push([title, sub].filter(Boolean).join(', ') + (date ? ` (${date})` : ''));
         bulletsOf(e.bullets).forEach((b) => lines.push(`  - ${b}`));
+        if (e.location) lines.push(`  ${e.location}`);
+        if (e.grade) lines.push(`  ${e.grade}`);
+        if (e.contact) lines.push(`  ${e.contact}`);
+        if (e.link && sub !== e.link) lines.push(`  ${e.link}`);
         if (e.description) lines.push(`  ${e.description}`);
       }
     lines.push('');

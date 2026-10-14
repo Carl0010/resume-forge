@@ -45,7 +45,8 @@ export const SECTION_DEFS = {
     title: (i) => i.name || 'Skill',
     fields: [
       { name: 'name', label: 'Skill', ph: 'Python', half: true },
-      { name: 'level', label: 'Level', type: 'level', half: true },
+      { name: 'group', label: 'Group (optional)', ph: 'Languages, Tools, Domain expertise', half: true },
+      { name: 'level', label: 'Optional visual rating', type: 'level', half: true },
     ],
   },
   projects: {
@@ -160,9 +161,19 @@ export const SECTION_DEFS = {
   },
 };
 
+// Career-specific sections use the same editor and entry model as work experience.
+for (const [key, label, entryLabel] of [
+  ['highlights', 'Selected Achievements', 'achievement'], ['boards', 'Board & Advisory Roles', 'role'],
+  ['research', 'Research Experience', 'research role'], ['teaching', 'Teaching Experience', 'teaching role'],
+  ['grants', 'Grants & Funding', 'grant'], ['service', 'Academic Service', 'service role'],
+]) {
+  SECTION_DEFS[key] = { ...SECTION_DEFS.custom, label, addLabel: `Add ${entryLabel}` };
+}
+
 export const DEFAULT_ORDER = [
   'summary', 'experience', 'education', 'projects', 'skills', 'certifications',
   'awards', 'languages', 'volunteer', 'publications', 'interests', 'references', 'custom',
+  'highlights', 'boards', 'research', 'teaching', 'grants', 'service',
 ];
 
 // Sections that sidebar-style templates place in the narrow column.
@@ -180,8 +191,9 @@ export function emptyResume() {
     summary: '',
     experience: [], education: [], skills: [], projects: [], certifications: [], awards: [],
     languages: [], volunteer: [], publications: [], interests: [], references: [], custom: [],
+    ...Object.fromEntries(['highlights', 'boards', 'research', 'teaching', 'grants', 'service'].map(k => [k, []])),
     order: [...DEFAULT_ORDER],
-    hidden: { volunteer: true, publications: true, references: true, custom: true, interests: false },
+    hidden: { highlights: true, boards: true, research: true, teaching: true, grants: true, service: true, volunteer: true, publications: true, references: true, custom: true, interests: false },
     titles: {}, // user-renamed section titles
     settings: { ...DEFAULT_SETTINGS, overrides: {} },
   };
@@ -205,7 +217,7 @@ export function normalizeResume(input) {
   }
   out.summary = typeof input.summary === 'string' ? input.summary : '';
   const order = Array.isArray(input.order) ? input.order.filter((k) => SECTION_DEFS[k]) : [];
-  out.order = [...order, ...DEFAULT_ORDER.filter((k) => !order.includes(k))];
+  out.order = [...new Set(order), ...DEFAULT_ORDER.filter((k) => !order.includes(k))];
   out.hidden = { ...base.hidden, ...(input.hidden || {}) };
   out.titles = { ...(input.titles || {}) };
   out.settings = { ...DEFAULT_SETTINGS, ...(input.settings || {}), overrides: { ...((input.settings || {}).overrides || {}) } };

@@ -29,6 +29,7 @@ function Field({ f, value, onChange, idp }) {
     <div className={'field' + (f.third ? ' third' : f.half ? ' half' : '')}>
       <label htmlFor={id}>{f.label}</label>
       {control}
+      {f.type === 'bullets' && <small className="muted">Action → scope → outcome. Use evidence you can explain in an interview; include numbers only when accurate.</small>}
     </div>
   );
 }
@@ -55,8 +56,8 @@ function ListSection({ k }) {
     return (
       <div className="compact-list">
         {items.map((it, i) => (
-          <div key={it.id} className="compact-row">
-            {def.fields.map((f) => (
+          <div key={it.id} className={"compact-row" + (k === "skills" ? " skill-row" : "")}>
+            {def.fields.filter(f => f.type !== 'level' || ['bars', 'dots'].includes(resolveStyle(resume.settings.templateId, resume.settings.overrides).skills)).map((f) => (
               <Field key={f.name} f={{ ...f, half: false, third: false }} value={it[f.name]} idp={`${k}-${it.id}`} onChange={(v) => set(i, f.name, v)} />
             ))}
             <button className="icon-btn" onClick={() => update((r) => (r[k].splice(i, 1), r))} aria-label={`Remove ${def.title(it)}`}><Ico n="trash" size={16} /></button>
@@ -89,7 +90,7 @@ function ListSection({ k }) {
             </div>
             {isOpen && (
               <div className="item-body fields">
-                {def.fields.map((f) => (
+                {def.fields.filter(f => f.type !== 'level' || ['bars', 'dots'].includes(resolveStyle(resume.settings.templateId, resume.settings.overrides).skills)).map((f) => (
                   <Field key={f.name} f={f} value={it[f.name]} idp={`${k}-${it.id}`} onChange={(v) => set(i, f.name, v)} />
                 ))}
               </div>
@@ -266,8 +267,8 @@ function Personal({ open, onToggle }) {
             {p.photo && <button className="btn text sm" onClick={() => update((r) => ((r.personal.photo = ''), r))}>Remove</button>}
             <small className="muted block">
               {hasSlot
-                ? 'Many Indian, US and UK employers prefer no photo.'
-                : 'This template has no photo slot. Choose a template with a photo, or set Photo to “Show photo” in the Design tab.'}
+                ? 'Follow the employer’s instructions and local hiring conventions. Photos are optional.'
+                : 'Photos are off. To add one, set Photo to “Show photo” in Design and turn off Simple layout.'}
             </small>
           </div>
         </div>

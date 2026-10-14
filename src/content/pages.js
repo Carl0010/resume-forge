@@ -374,7 +374,7 @@ export const INFO_PAGES = {
       },
       {
         h: 'Analytics and advertising',
-        p: ['At the time of writing, ResumeForge does not use analytics or advertising cookies. If we add analytics or show ads in future, we will update this policy first and, where the law requires, ask for your consent before setting non-essential cookies. Advertising will never appear inside the resume builder.'],
+        p: ['ResumeForge does not send usage analytics to a server or use advertising cookies. Aggregate counts of template choices, comparisons and export requests are stored only in this browser, without resume content or personal identifiers. Clear site data to remove these counts. Opening or closing the print dialog does not tell us whether a PDF was saved. Advertising never appears inside the resume builder.'],
       },
       {
         h: 'Children',
