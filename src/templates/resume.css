@@ -15,7 +15,7 @@
   text-align: left;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   color-scheme: light;
 }
 .rs[data-page='Letter'] { width: 215.9mm; min-height: 279.4mm; }
@@ -27,9 +27,17 @@
 .rs-header { display: flex; align-items: center; gap: 5mm; margin-bottom: calc(var(--gap) * 1.1); flex-wrap: wrap; }
 .rs-id { flex: 1 1 60%; min-width: 0; }
 .rs-name { font-family: var(--hf); font-size: 2.35em; line-height: 1.1; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+.rs-name[data-len='l'] { font-size: 2.05em; }
+.rs-name[data-len='xl'] { font-size: 1.75em; }
 .rs-title { font-size: 1.18em; color: var(--accent); margin-top: 1.2mm; font-weight: 500; }
 .rs-contacts { display: flex; flex-wrap: wrap; gap: 1mm 4.5mm; font-size: 0.96em; color: var(--muted); width: 100%; }
-.rs-contact { display: inline-flex; align-items: center; gap: 1.4mm; }
+.rs-contact { display: inline-flex; align-items: flex-start; gap: 1.4mm; }
+.rs-contact .rs-ic { margin-top: calc((1lh - 1.05em) / 2); }
+.rs-contacts.inline { display: block; }
+/* Each contact moves to the next line as a whole; only items longer than a line break inside. */
+.rs-contacts.inline .rs-contact { display: inline-block; max-width: 100%; vertical-align: top; }
+.rs-sep { color: color-mix(in srgb, var(--muted) 55%, white); padding: 0 0.6mm; }
+.rs[data-header='banner'] .rs-sep { color: var(--banner-muted); opacity: 0.6; }
 .rs-contacts.stacked { flex-direction: column; gap: 1.8mm; }
 .rs-photo { width: 27mm; height: 27mm; border-radius: 50%; object-fit: cover; flex: none; }
 .rs-photo-ph { display: grid; place-items: center; background: var(--tint); color: var(--accent); font-family: var(--hf); font-weight: 700; font-size: 2em; }
@@ -42,7 +50,15 @@
 .rs[data-header='underline'] .rs-header { border-bottom: 2.2pt solid var(--accent); padding-bottom: 3.5mm; }
 
 .rs[data-header='split'] .rs-header { flex-wrap: nowrap; align-items: flex-end; border-bottom: 1pt solid var(--line); padding-bottom: 3mm; }
-.rs[data-header='split'] .rs-contacts { width: auto; flex: 0 1 44%; flex-direction: column; align-items: flex-end; gap: 0.6mm; text-align: right; }
+.rs[data-header='split'] .rs-id { flex: 1 1 55%; }
+/* With a photo the split header has three parts; keep the name block from being crushed. */
+.rs[data-header='split'] .rs-header:has(.rs-photo) .rs-id { flex: 1 1 0; min-width: 40%; }
+.rs[data-header='split'] .rs-header:has(.rs-photo) .rs-contacts { flex-basis: 38%; }
+.rs[data-header='split'] .rs-header > .rs-photo { width: 22mm; height: 22mm; align-self: center; }
+.rs[data-header='split'] .rs-contacts { width: auto; flex: 0 1 42%; flex-direction: column; align-items: flex-end; gap: 0.6mm; text-align: right; }
+.rs[data-header='split'] .rs-contact { flex-direction: row-reverse; }
+.rs[data-header='split'] .rs-contacts.inline .rs-contact { display: block; }
+.rs[data-header='split'] .rs-contacts.inline .rs-sep { display: none; }
 
 .rs[data-header='banner'] { padding-top: 0; }
 .rs[data-header='banner'] .rs-header {
@@ -62,7 +78,7 @@
 .rs-st { font-family: var(--hf); font-size: 1.12em; font-weight: 700; color: var(--accent); margin-bottom: 2mm; letter-spacing: 0.02em; break-after: avoid; }
 .rs[data-title='rule'] .rs-st { text-transform: uppercase; border-bottom: 0.9pt solid var(--line); padding-bottom: 0.8mm; font-size: 1.02em; letter-spacing: 0.08em; }
 .rs[data-title='double'] .rs-st { text-transform: uppercase; border-top: 0.6pt solid var(--accent); border-bottom: 0.6pt solid var(--accent); padding: 0.8mm 0; text-align: center; letter-spacing: 0.16em; font-size: 0.98em; }
-.rs[data-title='caps'] .rs-st { font-variant: small-caps; text-transform: lowercase; font-size: 1.3em; letter-spacing: 0.06em; border-bottom: 0.5pt solid var(--line); }
+.rs[data-title='caps'] .rs-st { text-transform: uppercase; font-size: 1.04em; letter-spacing: 0.12em; border-bottom: 0.5pt solid var(--line); padding-bottom: 0.6mm; }
 .rs[data-title='bar'] .rs-st { border-left: 1.1mm solid var(--accent); padding-left: 2.2mm; text-transform: uppercase; letter-spacing: 0.08em; font-size: 1em; color: var(--text); }
 .rs[data-title='fill'] .rs-st { background: var(--tint); padding: 0.9mm 2mm; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.98em; }
 .rs[data-title='dotted'] .rs-st { text-transform: uppercase; letter-spacing: 0.1em; font-size: 1em; border-bottom: 1.2pt dotted var(--accent); padding-bottom: 0.6mm; }
@@ -73,43 +89,52 @@
 .rs-item { break-inside: avoid; }
 .rs-item + .rs-item { margin-top: calc(var(--gap) * 0.62); }
 .rs-row { display: flex; justify-content: space-between; align-items: baseline; gap: 3mm; }
-.rs-head { min-width: 0; }
+.rs-head { min-width: 0; flex: 1 1 auto; }
 .rs-it { font-weight: 700; color: var(--text); }
 .rs-sub { color: var(--text); }
 .rs-sub { display: block; margin-top: .4mm; }
 .rs-it + .rs-sub::before { content: ''; }
-.rs-date { flex: none; font-size: 0.96em; color: var(--muted); max-width: 34%; text-align: right; font-variant-numeric: tabular-nums; }
+.rs-date { flex: 0 0 auto; font-size: 0.96em; color: var(--muted); max-width: 42%; text-align: right; font-variant-numeric: tabular-nums; }
+.rs-nw { white-space: nowrap; }
 .rs-meta { font-size: 0.96em; color: var(--muted); font-style: italic; }
 .rs-p { margin: 0; }
 .rs-small { font-size: 0.96em; color: var(--muted); }
-.rs-ul { margin: 0.8mm 0 0; padding-left: 4.4mm; }
+.rs .rs-ul { margin: 0.8mm 0 0; padding-left: 4.4mm; }
 .rs-ul li { margin: 0.3mm 0; padding-left: 0.6mm; }
 .rs-ul li::marker { color: var(--accent); }
-.rs-ul.rs-plain { list-style: none; padding-left: 0; }
-.rs-ul.rs-plain li::before { content: '▪'; color: var(--accent); margin-right: 1.8mm; font-size: 0.8em; }
+.rs .rs-ul.rs-plain { list-style: none; padding-left: 0; }
+.rs-ul.rs-plain li { display: flex; gap: 1.8mm; padding-left: 0; }
+.rs-ul.rs-plain li::before { content: '▪'; color: var(--accent); font-size: 0.8em; flex: none; }
 
 .rs-tags { display: flex; flex-wrap: wrap; gap: 1.4mm; }
-.rs-tag { border: 0.6pt solid var(--line); background: var(--tint); padding: 0.5mm 2.2mm; border-radius: 1.2mm; font-size: 0.96em; }
+.rs-tag { border: 0.6pt solid var(--line); background: var(--tint); padding: 0.5mm 2.2mm; border-radius: 1.2mm; font-size: 0.96em; min-width: 0; max-width: 100%; }
 .rs-levels { display: flex; flex-direction: column; gap: 1.6mm; }
 .rs-levels.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6mm 8mm; }
-.rs-level { display: flex; align-items: center; justify-content: space-between; gap: 3mm; }
-.rs-bar { display: block; flex: 0 0 44%; height: 1.4mm; background: color-mix(in srgb, var(--accent) 16%, white); border-radius: 1mm; overflow: hidden; }
+.rs-level { display: flex; align-items: flex-start; justify-content: space-between; gap: 3mm; }
+.rs-level > span:first-child { min-width: 0; flex: 1 1 auto; }
+.rs-level > .rs-bar { margin-top: calc(0.5lh - 0.7mm); }
+.rs-level > .rs-dots { margin-top: calc(0.5lh - 1mm); }
+.rs-bar { display: block; flex: 0 0 40%; height: 1.4mm; background: color-mix(in srgb, var(--accent) 16%, white); border-radius: 1mm; overflow: hidden; }
 .rs-levels:not(.grid) .rs-level { flex-direction: column; align-items: stretch; gap: 0.8mm; }
-.rs-levels:not(.grid) .rs-bar { flex: none; width: 100%; }
-.rs-levels:not(.grid) .rs-level:has(.rs-dots) { flex-direction: row; align-items: center; }
+.rs-levels:not(.grid) .rs-bar { flex: none; width: 100%; margin-top: 0; }
+.rs-levels:not(.grid) { gap: 2.4mm; }
+.rs-levels:not(.grid) .rs-level:has(.rs-dots) { flex-direction: row; align-items: flex-start; }
 .rs-bar i { display: block; height: 100%; background: var(--accent); border-radius: 1mm; }
 .rs-dots { display: inline-flex; gap: 0.9mm; flex: none; }
 .rs-dots i { width: 2mm; height: 2mm; border-radius: 50%; border: 0.6pt solid var(--accent); }
 .rs-dots i.on { background: var(--accent); }
 .rs-kv { display: flex; flex-direction: column; gap: 1mm; }
-.rs-kv > div { display: flex; justify-content: space-between; gap: 2mm; }
+.rs-kv > div { display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: 2mm; }
+/* Fits on one line: fluency sits at the right edge. Too long: it drops below the name, left-aligned. */
+.rs-kv > div > span { flex: 1 0 auto; max-width: 100%; }
+.rs-kv em { flex: 0 1 auto; text-align: left; }
 .rs-kv em { color: var(--muted); font-style: normal; font-size: 0.96em; }
 
 /* ===== Layout: sidebar ===== */
 .rs[data-layout='sidebar'] { display: grid; grid-template-columns: 32% minmax(0, 1fr); padding: 0; }
 .rs[data-layout='sidebar'][data-side='right'] { grid-template-columns: minmax(0, 1fr) 32%; }
 .rs[data-layout='sidebar'][data-side='right'] .rs-side { order: 2; }
-.rs-side { background: var(--side-bg); color: var(--side-fg); padding: var(--pad) calc(var(--pad) * 0.75); display: flex; flex-direction: column; }
+.rs-side { background: var(--side-bg); color: var(--side-fg); padding: var(--pad) calc(var(--pad) * 0.62); display: flex; flex-direction: column; }
 .rs-side .rs-photo { width: 34mm; height: 34mm; margin: 0 auto calc(var(--gap)); border: 1mm solid color-mix(in srgb, var(--side-fg) 18%, transparent); }
 .rs-side .rs-sec:first-of-type { margin-top: 0; }
 .rs-side .rs-st { color: var(--side-accent); border-color: color-mix(in srgb, var(--side-fg) 30%, transparent); }
@@ -161,10 +186,10 @@
 .rs[data-layout='minimal'] .rs-ul li::marker { color: var(--muted); }
 
 /* Readable links and restrained supporting information, also preserved in PDF. */
-.rs a { color: inherit; text-decoration: underline; text-underline-offset: .15em; overflow-wrap: anywhere; }
+.rs a { color: inherit; text-decoration: underline; text-underline-offset: .15em; }
 .rs-contacts a { text-decoration-thickness: .5pt; }
 .rs-contact { min-width: 0; max-width: 100%; }
-.rs-contact > span, .rs-contact > a { min-width: 0; }
+.rs-contact > span, .rs-contact > a, .rs-header > .rs-contacts { min-width: 0; }
 .rs-skill-groups { display: flex; flex-direction: column; gap: 1.6mm; }
 .rs[data-layout='sidebar'] .rs-date, .rs-aside .rs-date { max-width: none; text-align: left; }
 .rs[data-layout='labels'] .rs-st { overflow-wrap: normal; hyphens: auto; }

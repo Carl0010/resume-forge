@@ -4,13 +4,13 @@ import { normalizeResume } from './schema.js';
 // Example content for each audience. Shown in template thumbnails and loadable in the builder.
 const professional = {
   personal: {
-    fullName: 'Aarav Mehta',
+    fullName: 'John Doe',
     jobTitle: 'Senior Product Manager',
-    email: 'aarav.mehta@email.com',
+    email: 'john.doe@email.com',
     phone: '+91 98765 43210',
     location: 'Bengaluru, India',
-    website: 'aaravmehta.dev',
-    linkedin: 'linkedin.com/in/aaravmehta',
+    website: 'johndoe.dev',
+    linkedin: 'linkedin.com/in/johndoe',
     github: '',
     photo: '',
   },
@@ -40,7 +40,7 @@ const professional = {
     { name: 'Jira & Confluence', level: 4 }, { name: 'Payments & Fintech', level: 5 },
   ],
   projects: [
-    { name: 'Open-source PRD Toolkit', link: 'github.com/aarav/prd-kit', start: '2023', end: '', bullets: 'Templates and checklists for product specs; 1.8k GitHub stars' },
+    { name: 'Open-source PRD Toolkit', link: 'github.com/johndoe/prd-kit', start: '2023', end: '', bullets: 'Templates and checklists for product specs; 1.8k GitHub stars' },
   ],
   certifications: [
     { name: 'Certified Scrum Product Owner (CSPO)', issuer: 'Scrum Alliance', date: '2020' },

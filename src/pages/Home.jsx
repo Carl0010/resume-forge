@@ -66,7 +66,7 @@ export default function Home() {
             <div className="demo-body">
               <div className="demo-panel">
                 <div className="demo-tabs"><b>Content</b><span>Design</span></div>
-                <div className="demo-field"><small>Full name</small><div>Aarav Mehta<u className="caret" /></div></div>
+                <div className="demo-field"><small>Full name</small><div>John Doe<u className="caret" /></div></div>
                 <div className="demo-field"><small>Job title</small><div>Senior Product Manager</div></div>
                 <div className="demo-chips"><span className="on">Summary</span><span>Experience</span><span>Skills</span></div>
                 <div className="demo-lines"><i /><i /><i /></div>

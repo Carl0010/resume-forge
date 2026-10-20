@@ -6,6 +6,38 @@ import { bulletsOf, sectionTitle, SIDE_SECTIONS } from '../data/schema.js';
 const range = (a, b) => [a, b].filter(Boolean).join(' – ');
 const has = (v) => v != null && String(v).trim() !== '';
 
+// Date range that only wraps at the dash ("September 2019 –" / "Present"), never inside a date.
+function DateRange({ a, b }) {
+  const parts = [a, b].filter(has);
+  return parts.map((x, i) => (
+    <React.Fragment key={i}>
+      {i > 0 && ' – '}
+      <span className="rs-nw">{x}</span>
+    </React.Fragment>
+  ));
+}
+
+// Long URLs/emails: offer line-break points after / @ . _ ? & = so they wrap at sensible places
+// instead of mid-word. <wbr> adds no characters, so copied/parsed text is unchanged.
+function Breakable({ text }) {
+  const str = String(text);
+  const parts = str.split(/(?<=[/@._?&=])/);
+  let seen = 0;
+  return parts.map((x, i) => {
+    const prev = parts[i - 1];
+    seen += x.length;
+    // Always allow a break after "@"; elsewhere only if a decent chunk follows,
+    // so "email.com" or "about/me" never leave a lonely "com" / "me" on the next line.
+    const ok = i > 0 && (/@$/.test(prev) || str.length - (seen - x.length) > 6);
+    return (
+      <React.Fragment key={i}>
+        {ok && <wbr />}
+        {x}
+      </React.Fragment>
+    );
+  });
+}
+
 const Icon = ({ k }) => {
   const p = {
     email: 'M3 5h18v14H3z M3 6l9 7 9-7',
@@ -25,7 +57,8 @@ const Icon = ({ k }) => {
 function Link({ value, kind }) {
   const href = kind ? contactHref(kind, value) : webHref(value);
   const label = ['email', 'phone', 'location'].includes(kind) ? value : linkLabel(value);
-  return href ? <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">{label}</a> : <span>{value}</span>;
+  const content = kind === 'phone' ? <span className="rs-nw">{label}</span> : kind === 'location' ? label : <Breakable text={label} />;
+  return href ? <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">{content}</a> : <span>{content}</span>;
 }
 
 const CONTACT_KEYS = ['email', 'phone', 'location', 'website', 'linkedin', 'github'];
@@ -33,6 +66,18 @@ const CONTACT_KEYS = ['email', 'phone', 'location', 'website', 'linkedin', 'gith
 function Contacts({ p, icons, stacked }) {
   const items = CONTACT_KEYS.filter((k) => has(p[k]));
   if (!items.length) return null;
+  if (!icons && !stacked)
+    // Plain text line with real "|" separators: easy for ATS parsers to split, and lines only break after a separator.
+    return (
+      <div className="rs-contacts inline">
+        {items.map((k, i) => (
+          <React.Fragment key={k}>
+            <span className="rs-contact"><Link kind={k} value={p[k]} /></span>
+            {i < items.length - 1 && <span className="rs-sep">{'\u00a0| '}</span>}
+          </React.Fragment>
+        ))}
+      </div>
+    );
   return (
     <div className={'rs-contacts' + (stacked ? ' stacked' : '')}>
       {items.map((k) => (
@@ -69,6 +114,7 @@ function Bullets({ text }) {
 }
 
 function Entry({ title, sub, date, meta, link, children }) {
+  const hasDate = Array.isArray(date) ? date.some(has) : has(date);
   return (
     <div className="rs-item">
       <div className="rs-row">
@@ -76,7 +122,7 @@ function Entry({ title, sub, date, meta, link, children }) {
           {has(title) && <span className="rs-it">{title}</span>}
           {has(sub) && <span className="rs-sub">{link ? <Link value={sub} /> : sub}</span>}
         </div>
-        {has(date) && <div className="rs-date">{date}</div>}
+        {hasDate && <div className="rs-date">{Array.isArray(date) ? <DateRange a={date[0]} b={date[1]} /> : date}</div>}
       </div>
       {has(meta) && <div className="rs-meta">{meta}</div>}
       {children}
@@ -90,25 +136,25 @@ function SectionBody({ k, r, s, inSide }) {
       return has(r.summary) ? <p className="rs-p">{r.summary}</p> : null;
     case 'experience':
       return r.experience.map((e) => (
-        <Entry key={e.id} title={e.role} sub={e.company} date={range(e.start, e.end)} meta={e.location}>
+        <Entry key={e.id} title={e.role} sub={e.company} date={[e.start, e.end]} meta={e.location}>
           <Bullets text={e.bullets} />
         </Entry>
       ));
     case 'education':
       return r.education.map((e) => (
-        <Entry key={e.id} title={e.degree} sub={e.school} date={range(e.start, e.end)} meta={[e.location, e.grade].filter(Boolean).join(' · ')}>
+        <Entry key={e.id} title={e.degree} sub={e.school} date={[e.start, e.end]} meta={[e.location, e.grade].filter(Boolean).join(' · ')}>
           <Bullets text={e.bullets} />
         </Entry>
       ));
     case 'projects':
       return r.projects.map((e) => (
-        <Entry key={e.id} title={e.name} sub={e.link} link date={range(e.start, e.end)}>
+        <Entry key={e.id} title={e.name} sub={e.link} link date={[e.start, e.end]}>
           <Bullets text={e.bullets} />
         </Entry>
       ));
     case 'volunteer':
       return r.volunteer.map((e) => (
-        <Entry key={e.id} title={e.role} sub={e.org} date={range(e.start, e.end)}>
+        <Entry key={e.id} title={e.role} sub={e.org} date={[e.start, e.end]}>
           <Bullets text={e.bullets} />
         </Entry>
       ));
@@ -126,7 +172,7 @@ function SectionBody({ k, r, s, inSide }) {
       ));
     case 'publications':
       return r.publications.map((e) => (
-        <Entry key={e.id} title={e.title} sub={e.publisher} date={e.date}><div className="rs-meta"><Link value={e.link} /></div></Entry>
+        <Entry key={e.id} title={e.title} sub={e.publisher} date={e.date}>{has(e.link) && <div className="rs-meta"><Link value={e.link} /></div>}</Entry>
       ));
     case 'certifications':
       return r.certifications.map((e) => <Entry key={e.id} title={e.name} sub={e.issuer} date={e.date} />);
@@ -137,7 +183,7 @@ function SectionBody({ k, r, s, inSide }) {
         </Entry>
       ));
     case 'references':
-      return r.references.map((e) => <Entry key={e.id} title={e.name} sub={e.position} meta={e.contact} />);
+      return r.references.map((e) => <Entry key={e.id} title={e.name} sub={e.position} meta={has(e.contact) ? <Breakable text={e.contact} /> : ''} />);
     case 'skills': {
       const list = r.skills.filter((x) => has(x.name));
       let mode = s.skills;
@@ -163,7 +209,7 @@ function SectionBody({ k, r, s, inSide }) {
       const list = r.languages.filter((x) => has(x.name));
       if (inSide || s.layout === 'twocol')
         return <div className="rs-kv">{list.map((x) => <div key={x.id}><span>{x.name}</span><em>{x.fluency}</em></div>)}</div>;
-      return <p className="rs-p">{list.map((x) => (x.fluency ? `${x.name} (${x.fluency})` : x.name)).join('  •  ')}</p>;
+      return <p className="rs-p">{list.map((x) => (!x.fluency ? x.name : /\)\s*$/.test(x.name) ? `${x.name} – ${x.fluency}` : `${x.name} (${x.fluency})`)).join('  •  ')}</p>;
     }
     case 'interests': {
       const list = r.interests.filter((x) => has(x.name));
@@ -187,13 +233,16 @@ function Section({ k, r, s, inSide }) {
   );
 }
 
+// Very long names step down in size so they stay on one or two lines instead of three or four.
+const nameLen = (n) => { const l = String(n || '').trim().length; return l > 36 ? 'xl' : l > 24 ? 'l' : undefined; };
+
 function Header({ r, s, showPhoto, compactContacts }) {
   const p = r.personal;
   return (
     <header className="rs-header">
       {showPhoto && <Photo src={p.photo} name={p.fullName} />}
       <div className="rs-id">
-        <h1 className="rs-name">{p.fullName || 'Your Name'}</h1>
+        <h1 className="rs-name" data-len={nameLen(p.fullName)}>{p.fullName || 'Your Name'}</h1>
         {has(p.jobTitle) && <div className="rs-title">{p.jobTitle}</div>}
       </div>
       {!compactContacts && <Contacts p={p} icons={s.layout !== 'classic' && s.layout !== 'compact' && s.header !== 'center'} />}

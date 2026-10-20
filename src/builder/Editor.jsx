@@ -273,7 +273,7 @@ function Personal({ open, onToggle }) {
           </div>
         </div>
         <div className="fields">
-          {F('fullName', 'Full name', 'Aarav Mehta')}
+          {F('fullName', 'Full name', 'John Doe')}
           {F('jobTitle', 'Job title / headline', 'Senior Product Manager')}
           {F('email', 'Email', 'you@email.com', 'half', 'email')}
           {F('phone', 'Phone', '+91 98765 43210', 'half', 'tel')}

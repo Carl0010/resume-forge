@@ -90,7 +90,7 @@ try {
     await send('Page.reload');
     await new Promise((r) => setTimeout(r, 300));
     await until(
-      `document.querySelector('.paper-frame .rs-name')?.textContent === '${key === 'professional' ? 'Aarav Mehta' : `Test ${key} ${options.mark || ''}`}' && !!document.querySelector('#print-root .resume-pages[data-ready="true"] .rs-page') || !!document.querySelector('.pagination-error')`,
+      `document.querySelector('.paper-frame .rs-name')?.textContent === '${key === 'professional' ? 'John Doe' : `Test ${key} ${options.mark || ''}`}' && !!document.querySelector('#print-root .resume-pages[data-ready="true"] .rs-page') || !!document.querySelector('.pagination-error')`,
     );
     assert.deepEqual(
       await evaluate(`[...document.querySelectorAll('.pagination-error')].map(x=>x.innerText)`),
@@ -116,7 +116,7 @@ try {
       assert.deepEqual(result.errors, [], t.id);
       assert.deepEqual(result.overflows, [], t.id);
       assert.equal(result.count, result.print, t.id);
-      assert.ok(result.text.includes('Aarav Mehta'), t.id);
+      assert.ok(result.text.includes('John Doe'), t.id);
       assert.ok(result.text.includes('Mentoring'), t.id + ' lost last section');
       if (
         [
@@ -143,7 +143,7 @@ try {
           t.id + ' PDF page count',
         );
         const text = execFileSync('pdftotext', [file, '-'], { encoding: 'utf8' });
-        assert.ok(text.includes('Aarav Mehta'));
+        assert.ok(text.includes('John Doe'));
         assert.ok(text.includes('Mentoring'));
       }
     }
