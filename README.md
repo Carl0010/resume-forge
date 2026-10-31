@@ -28,7 +28,7 @@ Old `#/…` links are upgraded to real paths automatically.
 | Resume renderer + styles | `src/templates/Resume.jsx`, `src/templates/resume.css` |
 | Data model & section specs | `src/data/schema.js` |
 | Example resumes (student / corporate / executive) | `src/data/samples.js` |
-| Auth (dummy now, Firebase-ready) | `src/services/authProvider.js`, `src/services/firebaseProvider.js` |
+| Auth (Firebase Google sign-in) | `src/services/authProvider.js` |
 | AI server calls | `src/services/ai.js` |
 | Config (API base, upload limits, Firebase keys) | `src/config.js` |
 
@@ -38,14 +38,9 @@ User data is autosaved to `localStorage` only. Nothing is sent anywhere except t
 Add one line to `TEMPLATES` in `registry.js` — pick a `layout` (`classic`, `sidebar`, `banner`, `labels`, `timeline`, `twocol`, `compact`, `minimal`),
 a `header` (`left`, `center`, `split`, `underline`, `banner`), a heading `title` style, fonts and colours.
 
-## Switching on real Google login (Firebase)
+## Google login (Firebase)
 
-1. `npm i firebase`
-2. Create `.env` from `.env.example` and fill in the `VITE_FIREBASE_*` values (Firebase console → Project settings → Web app). Enable **Google** under Authentication → Sign-in method and add your domain to *Authorized domains*.
-3. In `src/services/authProvider.js` replace the last line with:
-   ```js
-   export { default } from './firebaseProvider.js';
-   ```
+Sign-in uses Firebase Auth with the Google provider. Create `.env` from `.env.example` and fill in the `VITE_FIREBASE_*` values (Firebase console → Project settings → Web app). Make sure **Google** is enabled under Authentication → Sign-in method and your domains (including `localhost` and your Vercel domain) are listed under *Authorized domains*. On Vercel, add the same variables in Project → Settings → Environment Variables.
 
 ## Connecting your AI server (resume import)
 

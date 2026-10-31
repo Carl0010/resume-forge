@@ -159,7 +159,7 @@ export function Footer() {
 }
 
 export function LoginModal() {
-  const { modal, closeModal, signIn, mode } = useAuth();
+  const { modal, closeModal, signIn } = useAuth();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -190,7 +190,6 @@ export function LoginModal() {
           {busy ? 'Connecting to Google…' : 'Continue with Google'}
         </button>
         {err && <p className="error">{err}</p>}
-        {mode === 'demo' && <p className="tiny muted">Demo sign-in: no real Google account is used yet.</p>}
       </div>
     </Modal>
   );

@@ -1,52 +1,47 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Auth provider switch.
-// The app talks to auth ONLY through this interface:
+// Google sign-in via Firebase Auth. The app talks to auth ONLY through this interface:
 //   signInWithGoogle() -> Promise<User>
 //   signOut()          -> Promise<void>
 //   onChange(cb)       -> unsubscribe fn   (cb receives User | null)
 //   getIdToken()       -> Promise<string|null>  (sent to your AI server as Bearer token)
-//
-// DUMMY MODE (current): simulates Google sign-in so the whole UI flow works today.
-// To go live with Firebase:
-//   1) npm i firebase
-//   2) fill VITE_FIREBASE_* in .env (see src/config.js)
-//   3) replace the export at the bottom of this file with:
-//        export { default } from './firebaseProvider.js';
-// ─────────────────────────────────────────────────────────────────────────────
-import { storage } from './storage.js';
+// Config comes from the VITE_FIREBASE_* values in .env (see src/config.js).
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from 'firebase/auth';
+import { firebaseConfig } from '../config.js';
 
-const KEY = 'rf.demoUser';
-const listeners = new Set();
-const emit = (u) => listeners.forEach((cb) => cb(u));
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const google = new GoogleAuthProvider();
+google.setCustomParameters({ prompt: 'select_account' });
 
-const dummyProvider = {
-  mode: 'demo',
+const toUser = (u) =>
+  u && { uid: u.uid, displayName: u.displayName, email: u.email, photoURL: u.photoURL, provider: 'google.com' };
+
+const MESSAGES = {
+  'auth/popup-closed-by-user': 'Sign-in was cancelled.',
+  'auth/cancelled-popup-request': 'Sign-in was cancelled.',
+  'auth/popup-blocked': 'Your browser blocked the sign-in popup. Allow popups for this site and try again.',
+  'auth/network-request-failed': 'Network error. Check your connection and try again.',
+  'auth/unauthorized-domain': 'This domain is not authorised for sign-in yet.',
+};
+
+const authProvider = {
   async signInWithGoogle() {
-    await new Promise((r) => setTimeout(r, 900));
-    const user = {
-      uid: 'demo-' + Math.random().toString(36).slice(2, 8),
-      displayName: 'Demo User',
-      email: 'demo.user@gmail.com',
-      photoURL: '',
-      provider: 'google.com (demo)',
-    };
-    storage.set(KEY, user);
-    emit(user);
-    return user;
+    try {
+      const res = await signInWithPopup(auth, google);
+      return toUser(res.user);
+    } catch (e) {
+      throw new Error(MESSAGES[e.code] || 'Sign-in failed. Try again.');
+    }
   },
   async signOut() {
-    storage.remove(KEY);
-    emit(null);
+    await fbSignOut(auth);
   },
   onChange(cb) {
-    listeners.add(cb);
-    cb(storage.get(KEY, null));
-    return () => listeners.delete(cb);
+    return onAuthStateChanged(auth, (u) => cb(toUser(u)));
   },
   async getIdToken() {
-    const u = storage.get(KEY, null);
-    return u ? `demo-token-${u.uid}` : null;
+    return auth.currentUser ? auth.currentUser.getIdToken() : null;
   },
 };
 
-export default dummyProvider;
+export default authProvider;

@@ -92,7 +92,6 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       user,
-      mode: authProvider.mode,
       requireLogin,
       openLogin: (reason) => setModal({ reason: reason || '', resolve: () => {} }),
       modal,
